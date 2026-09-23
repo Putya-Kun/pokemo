@@ -51,6 +51,8 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
   const textOutlineStyle: React.CSSProperties = isDarkType
     ? {}
     : {
+        WebkitTextStroke: '0.8px rgba(255,255,255,0.95)',
+        paintOrder: 'stroke fill',
         textShadow:
           '-1px -1px 0 rgba(255,255,255,0.95), 1px -1px 0 rgba(255,255,255,0.95), -1px 1px 0 rgba(255,255,255,0.95), 1px 1px 0 rgba(255,255,255,0.95), 0 0 2px rgba(255,255,255,0.95)',
       };

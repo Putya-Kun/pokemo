@@ -3,6 +3,7 @@ import { CardData } from '../types';
 import { PokemonCard } from './PokemonCard';
 import { TrainerCard } from './TrainerCard';
 import { toPng } from 'html-to-image';
+import html2canvas from 'html2canvas';
 import { Share2, Printer, RefreshCw, Layers, Download, X } from 'lucide-react';
 
 interface CardPreviewProps {
@@ -200,6 +201,31 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
     }
   };
 
+  const captureCardImage = async (cardElement: HTMLElement): Promise<string> => {
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+
+    try {
+      const canvas = await html2canvas(cardElement, {
+        scale: 3, // Crisp high-res 3x output
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        logging: false,
+        imageTimeout: 5000,
+      });
+      return canvas.toDataURL('image/png', 1.0);
+    } catch (h2cError) {
+      console.warn('html2canvas failed, falling back to html-to-image:', h2cError);
+      return await toPng(cardElement, {
+        pixelRatio: 3,
+        quality: 0.95,
+        cacheBust: true,
+      });
+    }
+  };
+
   const handleExport = async () => {
     const cardElement = document.getElementById('pokemon-card-canvas');
     if (!cardElement) return;
@@ -209,15 +235,9 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
       const prevRotation = { ...rotation };
       setRotation({ x: 0, y: 0 });
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
-      const options = {
-        pixelRatio: 3, // High-res 3x output
-        quality: 0.95,
-        cacheBust: true,
-      };
-
-      const dataUrl = await toPng(cardElement, options);
+      const dataUrl = await captureCardImage(cardElement);
       const filename = `${card.name || 'pokemon_card'}_${card.kind}_${Date.now()}.png`;
 
       if (isMobile) {
