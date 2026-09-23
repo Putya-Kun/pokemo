@@ -16,17 +16,27 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
   const [is3DMode, setIs3DMode] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handlePointerMove = (clientX: number, clientY: number) => {
     if (!is3DMode || !cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-    const rotateY = (x / (rect.width / 2)) * 12;
-    const rotateX = -(y / (rect.height / 2)) * 12;
+    const x = clientX - rect.left - rect.width / 2;
+    const y = clientY - rect.top - rect.height / 2;
+    const rotateY = (x / (rect.width / 2)) * 18;
+    const rotateX = -(y / (rect.height / 2)) * 18;
     setRotation({ x: rotateX, y: rotateY });
   };
 
-  const handleMouseLeave = () => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    handlePointerMove(e.clientX, e.clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length > 0) {
+      handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  };
+
+  const handleResetRotation = () => {
     setRotation({ x: 0, y: 0 });
   };
 
@@ -41,7 +51,7 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
       setRotation({ x: 0, y: 0 });
 
       // Small delay for clean render
-      await new Promise((resolve) => setTimeout(resolve, 80));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       const options = {
         pixelRatio: 3, // Crisp high-res 3x output
@@ -52,26 +62,40 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
       const dataUrl = await toPng(cardElement, options);
       const filename = `${card.name || 'pokemon_card'}_${card.kind}_${Date.now()}.png`;
 
-      // Convert dataURL to Blob / File
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      const file = new File([blob], filename, { type: 'image/png' });
+      let shareHandled = false;
 
-      // Web Share API support check
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: card.name || 'ポケモンカード',
-          text: `「${card.name || 'オリジナルカード'}」を作成しました！`,
-          files: [file],
-        });
-      } else if (navigator.share) {
-        await navigator.share({
-          title: card.name || 'ポケモンカード',
-          text: `「${card.name || 'オリジナルカード'}」を作成しました！`,
-          url: window.location.href,
-        });
-      } else {
-        // Fallback download if Web Share is not supported
+      // Convert dataURL to Blob / File for native sharing
+      try {
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const file = new File([blob], filename, { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: card.name || 'ポケモンカード',
+            text: `「${card.name || 'オリジナルカード'}」を作成しました！`,
+            files: [file],
+          });
+          shareHandled = true;
+        } else if (navigator.share) {
+          await navigator.share({
+            title: card.name || 'ポケモンカード',
+            text: `「${card.name || 'オリジナルカード'}」を作成しました！`,
+            url: window.location.href,
+          });
+          shareHandled = true;
+        }
+      } catch (shareErr) {
+        if ((shareErr as Error)?.name === 'AbortError') {
+          // User canceled share menu
+          shareHandled = true;
+        } else {
+          console.warn('Web Share failed, attempting direct download fallback:', shareErr);
+        }
+      }
+
+      // Fallback download if Web Share API failed or is unsupported
+      if (!shareHandled) {
         const link = document.createElement('a');
         link.download = filename;
         link.href = dataUrl;
@@ -80,10 +104,8 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
 
       setRotation(prevRotation);
     } catch (err) {
-      if ((err as Error)?.name !== 'AbortError') {
-        console.error('Failed to share card image:', err);
-        alert('共有処理中にエラーが発生しました。別のブラウザでお試しください。');
-      }
+      console.error('Failed to share card image:', err);
+      alert('画像の処理中にエラーが発生しました。別のブラウザでお試しください。');
     } finally {
       setIsExporting(false);
     }
@@ -129,8 +151,13 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
       <div
         ref={cardRef}
         onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        className="card-perspective w-full flex items-center justify-center py-2 min-h-[480px] sm:min-h-[600px] overflow-hidden"
+        onMouseLeave={handleResetRotation}
+        onTouchStart={handleTouchMove}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleResetRotation}
+        className={`card-perspective w-full flex items-center justify-center py-2 min-h-[480px] sm:min-h-[600px] overflow-hidden select-none ${
+          is3DMode ? 'touch-none cursor-grab active:cursor-grabbing' : ''
+        }`}
         style={{
           perspective: 1200,
         }}
