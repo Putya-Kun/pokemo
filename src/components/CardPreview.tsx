@@ -3,7 +3,6 @@ import { CardData } from '../types';
 import { PokemonCard } from './PokemonCard';
 import { TrainerCard } from './TrainerCard';
 import { toPng } from 'html-to-image';
-import html2canvas from 'html2canvas';
 import { Printer, RefreshCw, Layers, Share2 } from 'lucide-react';
 
 interface CardPreviewProps {
@@ -278,49 +277,28 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
       })
     );
 
-    // 3. Primary capture: toPng (html-to-image) with mobile-safe, robust options
-    // Notice: cacheBust must be FALSE so base64 data URLs & blob URLs are not corrupted on mobile
+    const captureOptions = {
+      pixelRatio: 2, // 840x1172 for crisp high-resolution cards
+      quality: 0.98,
+      cacheBust: false,
+      width: 420,
+      height: 586,
+      style: {
+        transform: 'none',
+        transformOrigin: 'top left',
+        margin: '0',
+      },
+    };
+
+    // Safari warm-up pass to ensure SVG fonts & layout engine cache are primed
     try {
-      return await toPng(cardElement, {
-        pixelRatio: 2, // 2x retina (840x1172), fits mobile Safari memory limits safely
-        quality: 0.98,
-        cacheBust: false,
-        skipFonts: true,
-        fontEmbedCSS: '',
-        width: 420,
-        height: 586,
-        style: {
-          transform: 'none',
-          transformOrigin: 'top left',
-          margin: '0',
-        },
-        filter: (node: HTMLElement) => {
-          // Skip external stylesheet links to avoid SecurityError on iOS Safari
-          if (node.tagName === 'LINK' && (node as HTMLLinkElement).rel === 'stylesheet') {
-            return false;
-          }
-          return true;
-        },
-      });
-    } catch (toPngErr) {
-      console.warn('toPng failed, falling back to html2canvas:', toPngErr);
-      const canvas = await html2canvas(cardElement, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        logging: false,
-        width: 420,
-        height: 586,
-        onclone: (clonedDoc) => {
-          const el = clonedDoc.getElementById('pokemon-card-canvas');
-          if (el) {
-            el.style.transform = 'none';
-          }
-        },
-      });
-      return canvas.toDataURL('image/png', 1.0);
+      await toPng(cardElement, captureOptions);
+    } catch {
+      // ignore warmup notice
     }
+
+    // Primary capture (preserves -webkit-text-stroke, web fonts, full artwork)
+    return await toPng(cardElement, captureOptions);
   };
 
   const handleExport = async () => {
