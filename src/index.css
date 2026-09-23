@@ -99,6 +99,38 @@
     paint-order: stroke fill;
     text-shadow: 1px 1px 0 #ffffff, -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 0 0 2px #ffffff;
   }
+
+  /* Dedicated High-Visibility Export Mode: Thicker outlines specifically for high-resolution iOS export */
+  .card-export-active .card-text-stroke,
+  .card-export-active [data-text-stroke="true"] {
+    -webkit-text-stroke: 2.2px #ffffff !important;
+    -webkit-text-stroke-width: 2.2px !important;
+    -webkit-text-stroke-color: #ffffff !important;
+    paint-order: stroke fill !important;
+    text-shadow:
+      1.6px 0 0 #ffffff, -1.6px 0 0 #ffffff, 0 1.6px 0 #ffffff, 0 -1.6px 0 #ffffff,
+      1.2px 1.2px 0 #ffffff, -1.2px -1.2px 0 #ffffff, 1.2px -1.2px 0 #ffffff, -1.2px 1.2px 0 #ffffff,
+      0 0 3px #ffffff, 0 0 1.5px #ffffff !important;
+  }
+  .card-export-active .card-text-stroke-thick,
+  .card-export-active [data-text-stroke="thick"] {
+    -webkit-text-stroke: 3.6px #ffffff !important;
+    -webkit-text-stroke-width: 3.6px !important;
+    -webkit-text-stroke-color: #ffffff !important;
+    paint-order: stroke fill !important;
+    text-shadow:
+      2.2px 0 0 #ffffff, -2.2px 0 0 #ffffff, 0 2.2px 0 #ffffff, 0 -2.2px 0 #ffffff,
+      1.8px 1.8px 0 #ffffff, -1.8px -1.8px 0 #ffffff, 1.8px -1.8px 0 #ffffff, -1.8px 1.8px 0 #ffffff,
+      2.4px 2.4px 0 #ffffff, -2.4px -2.4px 0 #ffffff, 2.4px -2.4px 0 #ffffff, -2.4px 2.4px 0 #ffffff,
+      0 0 4.5px #ffffff, 0 0 2px #ffffff !important;
+  }
+  .card-export-active .rounded-full,
+  .card-export-active [title],
+  .card-export-active img[src*="energy"],
+  .card-export-active img[src*="assets/types"] {
+    box-shadow: none !important;
+    filter: none !important;
+  }
 }
 
 /* Card 3D tilt & sheen */

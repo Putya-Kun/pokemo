@@ -297,22 +297,29 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
       },
       onCloneNode: (cloned: Node) => {
         if (cloned instanceof HTMLElement) {
-          // 1. Inject dedicated SVG styles to enforce white outline / text-stroke
+          // 1. Inject dedicated SVG styles to enforce bold white outline / text-stroke specifically on export
           const styleTag = document.createElement('style');
           styleTag.textContent = `
             .card-text-stroke, [data-text-stroke="true"] {
-              -webkit-text-stroke: 0.95px #ffffff !important;
-              -webkit-text-stroke-width: 0.95px !important;
+              -webkit-text-stroke: 2.2px #ffffff !important;
+              -webkit-text-stroke-width: 2.2px !important;
               -webkit-text-stroke-color: #ffffff !important;
               paint-order: stroke fill !important;
-              text-shadow: 1px 1px 0 #ffffff, -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 0 0 1.5px #ffffff !important;
+              text-shadow:
+                1.6px 0 0 #ffffff, -1.6px 0 0 #ffffff, 0 1.6px 0 #ffffff, 0 -1.6px 0 #ffffff,
+                1.2px 1.2px 0 #ffffff, -1.2px -1.2px 0 #ffffff, 1.2px -1.2px 0 #ffffff, -1.2px 1.2px 0 #ffffff,
+                0 0 3px #ffffff, 0 0 1.5px #ffffff !important;
             }
             .card-text-stroke-thick, [data-text-stroke="thick"] {
-              -webkit-text-stroke: 1.3px #ffffff !important;
-              -webkit-text-stroke-width: 1.3px !important;
+              -webkit-text-stroke: 3.6px #ffffff !important;
+              -webkit-text-stroke-width: 3.6px !important;
               -webkit-text-stroke-color: #ffffff !important;
               paint-order: stroke fill !important;
-              text-shadow: 1px 1px 0 #ffffff, -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 0 0 2px #ffffff !important;
+              text-shadow:
+                2.2px 0 0 #ffffff, -2.2px 0 0 #ffffff, 0 2.2px 0 #ffffff, 0 -2.2px 0 #ffffff,
+                1.8px 1.8px 0 #ffffff, -1.8px -1.8px 0 #ffffff, 1.8px -1.8px 0 #ffffff, -1.8px 1.8px 0 #ffffff,
+                2.4px 2.4px 0 #ffffff, -2.4px -2.4px 0 #ffffff, 2.4px -2.4px 0 #ffffff, -2.4px 2.4px 0 #ffffff,
+                0 0 4.5px #ffffff, 0 0 2px #ffffff !important;
             }
             /* Eliminate any shifted shadow shapes on iOS Safari */
             [title], .rounded-full, img[src*="energy"], img[src*="assets/types"] {
@@ -322,17 +329,21 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
           `;
           cloned.appendChild(styleTag);
 
-          // 2. Re-apply inline text-stroke directly onto cloned elements because getComputedStyle in Safari omits WebKit prefixed properties
+          // 2. Re-apply inline text-stroke directly onto cloned elements with high-visibility bold outline
           const strokeEls = cloned.querySelectorAll('.card-text-stroke, .card-text-stroke-thick, [data-text-stroke]');
           strokeEls.forEach((el) => {
             if (el instanceof HTMLElement) {
               const isThick = el.classList.contains('card-text-stroke-thick') || el.getAttribute('data-text-stroke') === 'thick';
-              const width = isThick ? '1.3px' : '0.95px';
+              const width = isThick ? '3.6px' : '2.2px';
+              const textShadowVal = isThick
+                ? '2.2px 0 0 #ffffff, -2.2px 0 0 #ffffff, 0 2.2px 0 #ffffff, 0 -2.2px 0 #ffffff, 1.8px 1.8px 0 #ffffff, -1.8px -1.8px 0 #ffffff, 1.8px -1.8px 0 #ffffff, -1.8px 1.8px 0 #ffffff, 2.4px 2.4px 0 #ffffff, -2.4px -2.4px 0 #ffffff, 2.4px -2.4px 0 #ffffff, -2.4px 2.4px 0 #ffffff, 0 0 4.5px #ffffff, 0 0 2px #ffffff'
+                : '1.6px 0 0 #ffffff, -1.6px 0 0 #ffffff, 0 1.6px 0 #ffffff, 0 -1.6px 0 #ffffff, 1.2px 1.2px 0 #ffffff, -1.2px -1.2px 0 #ffffff, 1.2px -1.2px 0 #ffffff, -1.2px 1.2px 0 #ffffff, 0 0 3px #ffffff, 0 0 1.5px #ffffff';
+
               el.style.setProperty('-webkit-text-stroke', `${width} #ffffff`, 'important');
               el.style.setProperty('-webkit-text-stroke-width', width, 'important');
               el.style.setProperty('-webkit-text-stroke-color', '#ffffff', 'important');
               el.style.setProperty('paint-order', 'stroke fill', 'important');
-              el.style.setProperty('text-shadow', '1px 1px 0 #ffffff, -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 0 0 1.5px #ffffff', 'important');
+              el.style.setProperty('text-shadow', textShadowVal, 'important');
             }
           });
 
@@ -354,12 +365,21 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
         const style = document.createElement('style');
         style.textContent = `
           .card-text-stroke, [data-text-stroke="true"] {
-            -webkit-text-stroke: 0.95px #ffffff !important;
+            -webkit-text-stroke: 2.2px #ffffff !important;
             paint-order: stroke fill !important;
+            text-shadow:
+              1.6px 0 0 #ffffff, -1.6px 0 0 #ffffff, 0 1.6px 0 #ffffff, 0 -1.6px 0 #ffffff,
+              1.2px 1.2px 0 #ffffff, -1.2px -1.2px 0 #ffffff, 1.2px -1.2px 0 #ffffff, -1.2px 1.2px 0 #ffffff,
+              0 0 3px #ffffff !important;
           }
           .card-text-stroke-thick, [data-text-stroke="thick"] {
-            -webkit-text-stroke: 1.3px #ffffff !important;
+            -webkit-text-stroke: 3.6px #ffffff !important;
             paint-order: stroke fill !important;
+            text-shadow:
+              2.2px 0 0 #ffffff, -2.2px 0 0 #ffffff, 0 2.2px 0 #ffffff, 0 -2.2px 0 #ffffff,
+              1.8px 1.8px 0 #ffffff, -1.8px -1.8px 0 #ffffff, 1.8px -1.8px 0 #ffffff, -1.8px 1.8px 0 #ffffff,
+              2.4px 2.4px 0 #ffffff, -2.4px -2.4px 0 #ffffff, 2.4px -2.4px 0 #ffffff, -2.4px 2.4px 0 #ffffff,
+              0 0 4.5px #ffffff !important;
           }
           .rounded-full, [title], img[src*="energy"], img[src*="assets/types"] {
             box-shadow: none !important;
@@ -412,12 +432,16 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
         scaleWrapperRef.current.style.transition = 'none';
       }
 
+      // Apply dedicated high-visibility thick outline styles during capture
+      cardElement.classList.add('card-export-active');
+
       // Small delay to ensure on-screen preview layout is fully painted
       await new Promise((resolve) => setTimeout(resolve, 80));
 
       dataUrl = await captureCardImage(cardElement);
 
-      // Restore preview wrapper scale
+      // Restore preview wrapper scale and outline styles
+      cardElement.classList.remove('card-export-active');
       if (scaleWrapperRef.current) {
         scaleWrapperRef.current.style.transform = '';
         scaleWrapperRef.current.style.transition = '';
@@ -471,6 +495,9 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
         alert('画像の保存中に問題が発生しました。もう一度お試しください。');
       }
     } finally {
+      if (cardElement) {
+        cardElement.classList.remove('card-export-active');
+      }
       if (scaleWrapperRef.current) {
         scaleWrapperRef.current.style.transform = '';
         scaleWrapperRef.current.style.transition = '';
