@@ -1,68 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+1p:wght@400;500;700;800;900&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap');
 @import "tailwindcss";
 
-/* Custom Webfont for Pokémon Card HP & Numbers */
-@font-face {
-  font-family: 'Toxigenesis';
-  src: url('fonts/ToxigenesisRg-Bold.otf') format('opentype'),
-       url('fonts/ToxigenesisRg-Bold.ttf') format('truetype'),
-       url('fonts/Toxigenesis.otf') format('opentype'),
-       url('fonts/Toxigenesis-Bold.otf') format('opentype'),
-       url('fonts/Toxigenesis-Bold.ttf') format('truetype'),
-       local('Toxigenesis Bold'),
-       local('ToxigenesisRg-Bold'),
-       local('Toxigenesis-Bold'),
-       local('Toxigenesis');
-  font-weight: bold;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Toxigenesis';
-  src: url('fonts/ToxigenesisRg-Regular.otf') format('opentype'),
-       url('fonts/ToxigenesisRg-Regular.ttf') format('truetype'),
-       url('fonts/Toxigenesis.ttf') format('truetype'),
-       local('Toxigenesis Regular'),
-       local('Toxigenesis');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Custom Webfont for Pokémon Card Character / Card Name */
-@font-face {
-  font-family: 'Matter-Medium';
-  src: url('fonts/Matter-Medium.otf') format('opentype'),
-       url('fonts/Matter-Medium.ttf') format('truetype'),
-       url('fonts/Matter-Bold.otf') format('opentype'),
-       url('fonts/Matter-Bold.ttf') format('truetype'),
-       url('fonts/Matter.otf') format('opentype'),
-       url('fonts/Matter.ttf') format('truetype'),
-       local('Matter Medium'),
-       local('Matter-Medium'),
-       local('Matter');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Matter';
-  src: url('fonts/Matter-Bold.otf') format('opentype'),
-       url('fonts/Matter-Bold.ttf') format('truetype'),
-       url('fonts/Matter-SemiBold.otf') format('opentype'),
-       url('fonts/Matter-SemiBold.ttf') format('truetype'),
-       url('fonts/Matter.otf') format('opentype'),
-       url('fonts/Matter.ttf') format('truetype'),
-       local('Matter Bold'),
-       local('Matter-Bold'),
-       local('Matter');
-  font-weight: bold;
-  font-style: normal;
-  font-display: swap;
-}
-
 @layer utilities {
   .font-dela {
     font-family: 'Dela Gothic One', sans-serif;
@@ -74,18 +12,18 @@
     font-family: 'Zen Kaku Gothic New', sans-serif;
   }
   .font-matter {
-    font-family: 'Matter', 'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    font-family: 'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
   }
   .font-toxigenesis {
-    font-family: 'Toxigenesis', 'Dela Gothic One', sans-serif;
+    font-family: 'Zen Kaku Gothic New', 'Dela Gothic One', sans-serif;
   }
   .font-hp {
-    font-family: 'Toxigenesis', 'Futura', 'Trebuchet MS', 'Arial Black', sans-serif;
+    font-family: 'Zen Kaku Gothic New', 'Futura', 'Trebuchet MS', 'Arial Black', sans-serif;
     font-feature-settings: "tnum";
     letter-spacing: -0.04em;
   }
   .font-damage {
-    font-family: 'Matter-Medium', 'Matter', 'Toxigenesis', sans-serif;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
     font-feature-settings: "tnum";
     letter-spacing: -0.02em;
   }

@@ -3,7 +3,7 @@ import { CardData } from '../types';
 import { PokemonCard } from './PokemonCard';
 import { TrainerCard } from './TrainerCard';
 import { toPng } from 'html-to-image';
-import { Printer, RefreshCw, Layers, Share2 } from 'lucide-react';
+import { Printer, RefreshCw, Layers, Share2, Download, X } from 'lucide-react';
 
 interface CardPreviewProps {
   card: CardData;
@@ -16,6 +16,7 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
   const [isExporting, setIsExporting] = useState(false);
   const [is3DMode, setIs3DMode] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const [mobileShareData, setMobileShareData] = useState<{ url: string; filename: string } | null>(null);
 
   // Direct drag/swipe image position adjustment state
   const [isDraggingImage, setIsDraggingImage] = useState(false);
@@ -272,14 +273,14 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
         return new Promise<void>((resolve) => {
           img.onload = () => resolve();
           img.onerror = () => resolve();
-          setTimeout(resolve, 400);
+          setTimeout(resolve, 300);
         });
       })
     );
 
     const captureOptions = {
       pixelRatio: 2, // 840x1172 for crisp high-resolution cards
-      quality: 0.98,
+      quality: 1.0,
       cacheBust: false,
       width: 420,
       height: 586,
@@ -290,14 +291,14 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
       },
     };
 
-    // Safari warm-up pass to ensure SVG fonts & layout engine cache are primed
+    // Safari warm-up pass
     try {
       await toPng(cardElement, captureOptions);
     } catch {
       // ignore warmup notice
     }
 
-    // Primary capture (preserves -webkit-text-stroke, web fonts, full artwork)
+    // Final high-fidelity capture of the on-screen preview element directly
     return await toPng(cardElement, captureOptions);
   };
 
@@ -312,48 +313,56 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
       setRotation({ x: 0, y: 0 });
 
       // Small delay to ensure rotation reset has rendered
-      await new Promise((resolve) => setTimeout(resolve, 120));
+      await new Promise((resolve) => setTimeout(resolve, 80));
 
       dataUrl = await captureCardImage(cardElement);
 
       if (isMobile) {
-        // iOS / Android: Open native share sheet with the captured PNG
         const filename = `${card.name || 'pokemon_card'}_${Date.now()}.png`;
-        const res = await fetch(dataUrl);
-        const blob = await res.blob();
-        const file = new File([blob], filename, { type: 'image/png' });
+        let sharedSuccessfully = false;
 
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: card.name || 'ポケモンカード',
-            text: `「${card.name || 'オリジナルカード'}」を作成しました！`,
-            files: [file],
-          });
-        } else if (navigator.share) {
-          await navigator.share({
-            title: card.name || 'ポケモンカード',
-            text: `「${card.name || 'オリジナルカード'}」を作成しました！`,
-            url: window.location.href,
-          });
-        } else {
-          handlePCPrintView(dataUrl);
+        // Try Web Share API first
+        if (navigator.share) {
+          try {
+            const res = await fetch(dataUrl);
+            const blob = await res.blob();
+            const file = new File([blob], filename, { type: 'image/png' });
+
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                title: card.name || 'ポケモンカード',
+                text: `「${card.name || 'オリジナルカード'}」を作成しました！`,
+                files: [file],
+              });
+              sharedSuccessfully = true;
+            }
+          } catch (shareErr) {
+            if ((shareErr as Error)?.name === 'AbortError') {
+              // User dismissed native share sheet normally
+              sharedSuccessfully = true;
+            }
+          }
+        }
+
+        // If Web Share API was not supported or blocked in iframe:
+        // NEVER open print view on mobile! Open dedicated in-app iOS Share/Save Menu!
+        if (!sharedSuccessfully) {
+          setMobileShareData({ url: dataUrl, filename });
         }
       } else {
-        // PC: Open print/save preview
+        // PC: Dedicated print/save preview window
         handlePCPrintView(dataUrl);
       }
 
       setRotation(prevRotation);
     } catch (err) {
-      if ((err as Error)?.name === 'AbortError') {
-        // User cancelled native share sheet
+      console.warn('Export error:', err);
+      if (isMobile && dataUrl) {
+        setMobileShareData({ url: dataUrl, filename: `${card.name || 'pokemon_card'}.png` });
+      } else if (!isMobile && dataUrl) {
+        handlePCPrintView(dataUrl);
       } else {
-        console.warn('Share failed, opening fallback preview:', err);
-        if (dataUrl) {
-          handlePCPrintView(dataUrl);
-        } else {
-          alert('画像の処理中にエラーが発生しました。別のブラウザでお試しください。');
-        }
+        alert('画像の保存中に問題が発生しました。もう一度お試しください。');
       }
     } finally {
       setIsExporting(false);
@@ -449,6 +458,65 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
           <>💡 「保存」をクリックするとプレビュー画面が開き、実寸(63mm×88mm)での印刷や画像保存が可能です。</>
         )}
       </div>
+
+      {/* Mobile iOS / Android In-App Share & Save Menu */}
+      {mobileShareData && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-end sm:justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setMobileShareData(null)}
+        >
+          <div
+            className="bg-slate-900 border border-slate-700/80 rounded-3xl p-5 w-full max-w-sm flex flex-col items-center gap-4 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="text-base font-bold text-white flex items-center gap-1.5">
+                🎴 カード画像の共有・保存
+              </span>
+              <button
+                type="button"
+                onClick={() => setMobileShareData(null)}
+                className="p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-amber-300/90 text-center bg-amber-950/40 border border-amber-500/30 rounded-xl p-2.5 w-full leading-relaxed">
+              💡 <strong>画像を長押し</strong>して「写真に追加」するか、下のボタンから保存できます
+            </p>
+
+            {/* Rendered image ready for direct long-press save on iOS */}
+            <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-slate-950">
+              <img
+                src={mobileShareData.url}
+                alt={card.name || '作成したカード'}
+                className="w-[230px] h-[321px] object-contain block select-auto pointer-events-auto"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-2 w-full pt-1">
+              <a
+                href={mobileShareData.url}
+                download={mobileShareData.filename}
+                className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-md active:scale-98 transition-all text-center"
+              >
+                <Download className="w-4 h-4" />
+                <span>画像を端末に保存する</span>
+              </a>
+
+              <button
+                type="button"
+                onClick={() => setMobileShareData(null)}
+                className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors cursor-pointer"
+              >
+                閉じる
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 });

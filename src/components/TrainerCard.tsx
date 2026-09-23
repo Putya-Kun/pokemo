@@ -32,7 +32,7 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
   return (
     <div
       id="pokemon-card-canvas"
-      className="relative w-[420px] h-[586px] rounded-[22px] shadow-2xl overflow-hidden select-none font-mplus text-slate-900 transition-transform duration-200 shrink-0"
+      className="relative w-[420px] h-[586px] rounded-[22px] shadow-2xl overflow-hidden select-none font-mplus text-slate-900 shrink-0"
       style={{
         background: isAceSpec
           ? 'linear-gradient(135deg, #ec4899 0%, #db2777 40%, #be185d 70%, #9d174d 100%)'

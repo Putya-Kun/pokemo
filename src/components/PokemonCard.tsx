@@ -78,7 +78,7 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
   return (
     <div
       id="pokemon-card-canvas"
-      className="relative w-[420px] h-[586px] rounded-[22px] shadow-2xl overflow-hidden select-none font-mplus text-slate-900 transition-transform duration-200 shrink-0"
+      className="relative w-[420px] h-[586px] rounded-[22px] shadow-2xl overflow-hidden select-none font-mplus text-slate-900 shrink-0"
       style={{
         background: isTera
           ? 'linear-gradient(145deg, #e0f2fe 0%, #bae6fd 25%, #fed7aa 50%, #fbcfe8 75%, #c7d2fe 100%)'
