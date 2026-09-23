@@ -3,11 +3,27 @@ import { TrainerCardData } from '../types';
 import { TRAINER_CATEGORY_CONFIG } from '../constants/cardData';
 import { TRAINER_BACKGROUND_TEXTURES, getFrameUrl } from '../constants/energyImages';
 
+// =========================================================================
+// 【トレーナーズカード描画カスタム調整定数 (コードから調整可能)】
+// =========================================================================
+export const TRAINER_CARD_LAYOUT_CONFIG = {
+  // 通常枠のイラスト表示位置・サイズ (背景カードに合わせてサイズ調整可能)
+  IMAGE_TOP: '17.2%',    // 画像の上の位置
+  IMAGE_LEFT: '8.5%',   // 画像の左の位置
+  IMAGE_WIDTH: '83.0%',  // 画像の横幅 (小さめの枠に設定)
+  IMAGE_HEIGHT: '38.0%', // 画像の高さ (小さめの枠に設定)
+
+  // 効果テキストエリア設定 (背景画像にテキスト枠があるためデフォルトで余分な図形枠を非表示)
+  TEXT_BOX_SHOW_BORDER: false, // trueにすると白い四角形枠を描画、falseで背景画像枠の上に直書き
+  TEXT_BOX_TOP: '58.5%',       // 効果テキストエリアの上の位置
+  TEXT_BOX_HEIGHT: '29.5%',    // 効果テキストエリアの高さ
+};
+
 interface TrainerCardProps {
   card: TrainerCardData;
 }
 
-export const TrainerCard: React.FC<TrainerCardProps> = ({ card }) => {
+export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => {
   const catConfig = TRAINER_CATEGORY_CONFIG[card.category] || TRAINER_CATEGORY_CONFIG.item;
   const isAceSpec = card.category === 'ace_spec';
   const frameUrl = getFrameUrl(card.selectedFrame);
@@ -106,24 +122,19 @@ export const TrainerCard: React.FC<TrainerCardProps> = ({ card }) => {
           )}
         </div>
 
-        {/* ILLUSTRATION AREA */}
+        {/* ILLUSTRATION AREA (最下層レイヤー z-1 で背景カードや各種要素と干渉しない配置) */}
         <div
-          className={`absolute rounded-[8px] overflow-hidden border-[2.5px] border-slate-300/90 bg-slate-900 shadow-md ${
-            card.isFullArt ? 'z-0' : 'z-10'
+          className={`absolute overflow-hidden rounded-[8px] flex items-center justify-center pointer-events-none z-1 ${
+            card.isFullArt ? 'inset-0 w-full h-full rounded-none' : ''
           }`}
           style={
             card.isFullArt
-              ? {
-                  top: '16.5%',
-                  left: '6.44%',
-                  width: '87.12%',
-                  height: '73.0%',
-                }
+              ? {}
               : {
-                  top: '16.5%',
-                  left: '6.44%',
-                  width: '87.12%',
-                  height: '42.0%',
+                  top: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_TOP,
+                  left: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_LEFT,
+                  width: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_WIDTH,
+                  height: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_HEIGHT,
                 }
           }
         >
@@ -139,7 +150,7 @@ export const TrainerCard: React.FC<TrainerCardProps> = ({ card }) => {
               }}
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-800 text-slate-400 text-xs">
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-800/90 text-slate-400 text-xs border-[2px] border-slate-400/80 rounded-[8px]">
               <span>画像が設定されていません</span>
             </div>
           )}
@@ -150,27 +161,26 @@ export const TrainerCard: React.FC<TrainerCardProps> = ({ card }) => {
               FULL ART
             </div>
           )}
-
-          {/* Artwork shine bevel */}
-          <div className="absolute inset-0 pointer-events-none shadow-[inset_0_2px_4px_rgba(0,0,0,0.4),_inset_0_-1px_2px_rgba(255,255,255,0.4)]" />
         </div>
 
-        {/* EFFECT TEXT BOX (トレーナーズカードの効果説明) */}
+        {/* EFFECT TEXT BOX (トレーナーズカードの効果説明 - 完全透明・スクロールなし) */}
         <div
-          className={`absolute rounded-[9px] border border-slate-300/90 shadow-sm p-3 flex flex-col justify-between overflow-hidden z-20 ${
+          className={`absolute p-3 flex flex-col justify-between overflow-hidden z-20 ${
             card.isFullArt
-              ? 'bg-white/90 backdrop-blur-sm'
-              : 'bg-white/95'
+              ? 'bg-white/90 border border-slate-300/90 shadow-sm rounded-[9px] backdrop-blur-sm'
+              : TRAINER_CARD_LAYOUT_CONFIG.TEXT_BOX_SHOW_BORDER
+              ? 'bg-white/95 border border-slate-300/90 shadow-sm rounded-[9px]'
+              : 'bg-transparent border-none shadow-none'
           }`}
           style={{
-            top: card.isFullArt ? '60.0%' : '59.5%',
+            top: card.isFullArt ? '60.0%' : TRAINER_CARD_LAYOUT_CONFIG.TEXT_BOX_TOP,
             left: '6.44%',
             width: '87.12%',
-            height: card.isFullArt ? '28.0%' : '28.5%',
+            height: card.isFullArt ? '28.0%' : TRAINER_CARD_LAYOUT_CONFIG.TEXT_BOX_HEIGHT,
           }}
         >
-          {/* Main Effect Text */}
-          <div className="flex-1 overflow-y-auto pr-0.5">
+          {/* Main Effect Text (スクロールなし) */}
+          <div className="flex-1 overflow-hidden pr-0.5">
             <p className="text-[12.5px] leading-[1.55] text-slate-950 font-medium whitespace-pre-line">
               {card.effectText || 'トレーナーズカードの効果テキストを入力してください。'}
             </p>
@@ -244,4 +254,4 @@ export const TrainerCard: React.FC<TrainerCardProps> = ({ card }) => {
       </div>
     </div>
   );
-};
+});

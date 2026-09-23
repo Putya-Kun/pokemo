@@ -385,43 +385,20 @@ export const MovesAndAbilityEditor: React.FC<MovesAndAbilityEditorProps> = ({
               />
             </div>
 
-            {/* MOVE DESIGN & THEME (Satisfies requirement: カードのデザインはわざごとに変化する) */}
-            <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-700/60">
-              <div>
-                <label className="text-[10px] text-amber-300 font-bold block mb-0.5 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" />
-                  わざのデザイン演出
-                </label>
-                <select
-                  value={move.theme}
-                  onChange={(e) =>
-                    handleUpdateMove(moveIdx, {
-                      theme: e.target.value as MoveTheme,
-                    })
-                  }
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
-                >
-                  {MOVE_THEME_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] text-slate-400 block mb-0.5">
-                  特殊タグ (任意)
-                </label>
-                <input
-                  type="text"
-                  value={move.specialTag || ''}
-                  onChange={(e) =>
-                    handleUpdateMove(moveIdx, { specialTag: e.target.value })
-                  }
-                  placeholder="テラスわざ, GX, 必殺技"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
-                />
-              </div>
+            {/* Special Tag */}
+            <div className="pt-1 border-t border-slate-700/60">
+              <label className="text-[10px] text-slate-400 block mb-0.5">
+                特殊タグ (任意)
+              </label>
+              <input
+                type="text"
+                value={move.specialTag || ''}
+                onChange={(e) =>
+                  handleUpdateMove(moveIdx, { specialTag: e.target.value })
+                }
+                placeholder="テラスわざ, GX, 必殺技"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
+              />
             </div>
           </div>
         ))}

@@ -9,21 +9,27 @@ import { Share2, Printer, RefreshCw, Layers, Download, X } from 'lucide-react';
 interface CardPreviewProps {
   card: CardData;
   onSaveToGallery?: () => void;
+  onUpdateCard?: (updated: Partial<CardData>) => void;
 }
 
-export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
+export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpdateCard }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [is3DMode, setIs3DMode] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [mobileShareModalUrl, setMobileShareModalUrl] = useState<string | null>(null);
 
+  // Direct drag/swipe image position adjustment state
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const dragStartRef = useRef<{ clientX: number; clientY: number; posX: number; posY: number } | null>(null);
+
   const isMobile = typeof window !== 'undefined' && (
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
     (navigator.maxTouchPoints > 0 && window.innerWidth < 1024)
   );
 
-  const handlePointerMove = (clientX: number, clientY: number) => {
+  // 3D Tilt handler
+  const handle3DTilt = (clientX: number, clientY: number) => {
     if (!is3DMode || !cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     const x = clientX - rect.left - rect.width / 2;
@@ -33,18 +39,48 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
     setRotation({ x: rotateX, y: rotateY });
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    handlePointerMove(e.clientX, e.clientY);
+  // Drag start (Mouse down / Touch start)
+  const handlePointerDown = (clientX: number, clientY: number) => {
+    if (is3DMode || !card.imageUrl || !onUpdateCard) return;
+    setIsDraggingImage(true);
+    dragStartRef.current = {
+      clientX,
+      clientY,
+      posX: card.imagePositionX || 0,
+      posY: card.imagePositionY || 0,
+    };
   };
 
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (e.touches.length > 0) {
-      handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+  // Drag move (Mouse move / Touch move)
+  const handlePointerMove = (clientX: number, clientY: number) => {
+    if (is3DMode) {
+      handle3DTilt(clientX, clientY);
+      return;
+    }
+
+    if (isDraggingImage && dragStartRef.current && onUpdateCard && card.imageUrl) {
+      const deltaX = clientX - dragStartRef.current.clientX;
+      const deltaY = clientY - dragStartRef.current.clientY;
+
+      // Sensitivity factor: 1px movement ≈ 0.35 unit position change
+      const sensitivity = 0.35;
+      const nextX = Math.min(50, Math.max(-50, Math.round(dragStartRef.current.posX + deltaX * sensitivity)));
+      const nextY = Math.min(50, Math.max(-50, Math.round(dragStartRef.current.posY + deltaY * sensitivity)));
+
+      onUpdateCard({
+        imagePositionX: nextX,
+        imagePositionY: nextY,
+      });
     }
   };
 
-  const handleResetRotation = () => {
-    setRotation({ x: 0, y: 0 });
+  // Drag end (Mouse up / Touch end / Leave)
+  const handlePointerUp = () => {
+    setIsDraggingImage(false);
+    dragStartRef.current = null;
+    if (is3DMode) {
+      setRotation({ x: 0, y: 0 });
+    }
   };
 
   // 1. Mobile Native Share Sheet (iOS / Android)
@@ -95,7 +131,7 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
       <html lang="ja">
         <head>
           <meta charset="utf-8" />
-          <title>${card.name || 'ポケモンカード'} - 印刷ビュー</title>
+          <title>${card.name || 'ポケモンカード'} - 印刷</title>
           <style>
             @media print {
               body { background: white !important; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
@@ -162,7 +198,7 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
         </head>
         <body>
           <div class="card-box">
-            <h2 class="no-print" style="margin:0; font-size:18px; font-weight:800;">🎴 ポケモンカード 印刷ビュー</h2>
+            <h2 class="no-print" style="margin:0; font-size:18px; font-weight:800;">🎴 ポケモンカード 印刷</h2>
             <img src="${dataUrl}" class="print-card" alt="カード印刷プレビュー" />
             <div class="btn-group no-print">
               <button class="btn btn-print" onclick="window.print()">🖨️ 今すぐ印刷する</button>
@@ -275,7 +311,7 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
 
         <div className="h-4 w-px bg-slate-700" />
 
-        {/* Action Button (Mobile: 共有 | PC: 印刷ビュー) */}
+        {/* Action Button (Mobile: 共有 | PC: 印刷) */}
         <button
           type="button"
           disabled={isExporting}
@@ -289,20 +325,34 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
           ) : (
             <Printer className="w-3.5 h-3.5" />
           )}
-          <span>{isMobile ? '共有' : '印刷ビュー'}</span>
+          <span>{isMobile ? '共有' : '印刷'}</span>
         </button>
       </div>
 
       {/* Card Rendering Box */}
       <div
         ref={cardRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleResetRotation}
-        onTouchStart={handleTouchMove}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleResetRotation}
+        onMouseDown={(e) => handlePointerDown(e.clientX, e.clientY)}
+        onMouseMove={(e) => handlePointerMove(e.clientX, e.clientY)}
+        onMouseUp={handlePointerUp}
+        onMouseLeave={handlePointerUp}
+        onTouchStart={(e) => {
+          if (e.touches.length > 0) {
+            handlePointerDown(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }}
+        onTouchMove={(e) => {
+          if (e.touches.length > 0) {
+            handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }}
+        onTouchEnd={handlePointerUp}
         className={`card-perspective w-full flex items-center justify-center py-2 min-h-[480px] sm:min-h-[600px] overflow-hidden select-none ${
-          is3DMode ? 'touch-none cursor-grab active:cursor-grabbing' : ''
+          is3DMode
+            ? 'touch-none cursor-grab active:cursor-grabbing'
+            : card.imageUrl
+            ? 'touch-none cursor-move active:cursor-grabbing'
+            : ''
         }`}
         style={{
           perspective: 1200,
@@ -330,7 +380,7 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
         {isMobile ? (
           <>💡 「共有」をタップすると、iOS/Androidの標準共有画面が開き画像やメッセージを共有できます。</>
         ) : (
-          <>💡 「印刷ビュー」をクリックすると、実際のカードサイズ (63mm×88mm) で印刷画面が開きます。</>
+          <>💡 「印刷」をクリックすると、実際のカードサイズ (63mm×88mm) で印刷画面が開きます。</>
         )}
       </div>
 
@@ -378,4 +428,4 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
       )}
     </div>
   );
-};
+});

@@ -71,74 +71,74 @@ export const FRAME_OPTIONS: FrameOption[] = [
   {
     id: 'normal',
     name: 'ノーマル',
-    url: '/assets/frame/ノーマル.png',
+    url: 'assets/frame/ノーマル.png',
     colorPreview: '#94a3b8',
     description: '標準的なシルバー枠',
   },
   {
     id: 'rare',
     name: 'レア',
-    url: '/assets/frame/レア.png',
+    url: 'assets/frame/レア.png',
     colorPreview: '#38bdf8',
     description: '鮮やかなレア装飾フレーム',
   },
   {
     id: 'gold',
     name: '金 (ゴールド)',
-    url: '/assets/frame/金.png',
+    url: 'assets/frame/金.png',
     colorPreview: '#eab308',
     description: '豪華なゴールド金箔フレーム',
   },
   {
     id: 'pearl',
     name: 'パール',
-    url: '/assets/frame/パール.png',
+    url: 'assets/frame/パール.png',
     colorPreview: '#f472b6',
     description: '真珠光沢の上品なフレーム',
   },
   {
     id: 'red',
     name: '赤 (レッド)',
-    url: '/assets/frame/赤.png',
+    url: 'assets/frame/赤.png',
     colorPreview: '#ef4444',
     description: '炎・情熱の赤フレーム',
   },
   {
     id: 'blue',
     name: '青 (ブルー)',
-    url: '/assets/frame/青.png',
+    url: 'assets/frame/青.png',
     colorPreview: '#3b82f6',
     description: '水・深海の青フレーム',
   },
   {
     id: 'green',
     name: '緑 (グリーン)',
-    url: '/assets/frame/緑.png',
+    url: 'assets/frame/緑.png',
     colorPreview: '#22c55e',
     description: '草・自然の緑フレーム',
   },
   {
     id: 'yellow',
     name: '黄色 (イエロー)',
-    url: '/assets/frame/黄色.png',
+    url: 'assets/frame/黄色.png',
     colorPreview: '#facc15',
     description: '雷・輝きの黄色フレーム',
   },
   {
     id: 'purple',
     name: '紫 (パープル)',
-    url: '/assets/frame/紫.png',
+    url: 'assets/frame/紫.png',
     colorPreview: '#a855f7',
     description: '超・神秘の紫フレーム',
   },
 ];
 
-export const getFrameUrl = (frameId?: string, defaultType?: PokemonType): string => {
+export const getFrameUrl = (frameId?: string): string => {
   if (!frameId || frameId === 'none') {
     return '';
   }
   if (FRAME_TEXTURES[frameId]) {
-    return FRAME_TEXTURES[frameId];
+    return encodeURI(FRAME_TEXTURES[frameId]);
   }
   return '';
 };

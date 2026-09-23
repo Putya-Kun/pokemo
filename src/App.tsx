@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CardData, PokemonCardData, TrainerCardData } from './types';
 import { PRESET_CARDS } from './constants/cardData';
 import { CardPreview } from './components/CardPreview';
@@ -28,9 +28,21 @@ type TabType = 'basic' | 'image' | 'moves' | 'stats' | 'style' | 'saved';
 
 export default function App() {
   // Initial default card (Pikachu ex)
-  const [currentCard, setCurrentCard] = useState<CardData>(
-    JSON.parse(JSON.stringify(PRESET_CARDS[0].data))
-  );
+  const [currentCard, setCurrentCard] = useState<CardData>(() => {
+    const cardData = JSON.parse(JSON.stringify(PRESET_CARDS[0].data));
+    cardData.imageUrl = ''; // Default image URL is empty
+    return cardData;
+  });
+
+  // Debounced card state for preview rendering to optimize input performance
+  const [previewCard, setPreviewCard] = useState<CardData>(currentCard);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPreviewCard(currentCard);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [currentCard]);
 
   const [activeTab, setActiveTab] = useState<TabType>('basic');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -57,7 +69,7 @@ export default function App() {
         setCurrentCard({
           ...JSON.parse(JSON.stringify(pokemonPreset)),
           name: currentCard.name && currentCard.name !== 'ナンジャモ' && currentCard.name !== '博士の研究' ? currentCard.name : 'ピカチュウ',
-          imageUrl: currentCard.imageUrl || pokemonPreset.imageUrl,
+          imageUrl: currentCard.imageUrl || '',
           illustrator: currentCard.illustrator || pokemonPreset.illustrator,
           cardNumber: currentCard.cardNumber || pokemonPreset.cardNumber,
           setSymbol: currentCard.setSymbol || pokemonPreset.setSymbol,
@@ -73,13 +85,14 @@ export default function App() {
         setCurrentCard({
           ...JSON.parse(JSON.stringify(trainerPreset)),
           name: currentCard.name && currentCard.name !== 'ピカチュウ' && currentCard.name !== 'リザードン' ? currentCard.name : 'ナンジャモ',
-          imageUrl: currentCard.imageUrl || trainerPreset.imageUrl,
+          imageUrl: currentCard.imageUrl || '',
+          isFullArt: false, // Default full-art to false
           illustrator: currentCard.illustrator || trainerPreset.illustrator,
           cardNumber: currentCard.cardNumber || trainerPreset.cardNumber,
           setSymbol: currentCard.setSymbol || trainerPreset.setSymbol,
           regulationMark: currentCard.regulationMark || trainerPreset.regulationMark,
           rarity: currentCard.rarity || trainerPreset.rarity,
-          selectedFrame: currentCard.selectedFrame || 'normal',
+          selectedFrame: 'none', // Trainer cards force no frame
         });
       }
       showToast('トレーナーズカードレイアウトに切り替えました');
@@ -114,10 +127,10 @@ export default function App() {
             </div>
             <div>
               <h1 className="font-zen font-black text-sm sm:text-base tracking-tight text-white flex items-center gap-1.5 leading-none">
-                ポケモンカードジェネレーター
+                PokeMO
               </h1>
               <span className="text-[10px] text-slate-400 block mt-0.5">
-                オリジナルカード作成・わざデザイン演出・画像保存
+                手軽にオリジナルカード作成
               </span>
             </div>
           </div>
@@ -141,7 +154,8 @@ export default function App() {
         {/* LEFT / TOP: LIVE CARD PREVIEW (5 cols on lg) */}
         <div className="lg:col-span-5 flex flex-col items-center sticky lg:top-20 z-10">
           <CardPreview
-            card={currentCard}
+            card={previewCard}
+            onUpdateCard={handleUpdateCard}
             onSaveToGallery={() => {
               showToast(`「${currentCard.name}」を保存しました`);
             }}
@@ -233,7 +247,7 @@ export default function App() {
 
       {/* FOOTER */}
       <footer className="border-t border-slate-900 bg-slate-950 py-4 px-6 text-center text-xs text-slate-500">
-        ポケモンカードジェネレーター (Pokemon Card Generator) — ファンアート・オリジナルカード作成用ツール
+        ポケモンカードジェネレーター (Pokemon Card Generator) — オリジナルカード作成用ツール
       </footer>
     </div>
   );

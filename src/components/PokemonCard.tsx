@@ -10,7 +10,7 @@ import { EnergyIcon } from './EnergyIcon';
 // =========================================================================
 export const POKEMON_CARD_LAYOUT_CONFIG = {
   TITLE_OFFSET_X: 0,        // タイトル（名前）開始位置の左右オフセット (px)
-  SUB_NAME_MARGIN_RIGHT: -16,  // サブキャラクター名とメイン名の間の間隔 (px, 小さく・マイナスにするとより狭くなります)
+  SUB_NAME_MARGIN_RIGHT: -14,  // サブキャラクター名とメイン名の間の間隔 (px, 小さく・マイナスにするとより狭くなります)
   SUB_NAME_FONT_SIZE: 18,    // サブキャラクター名のフォントサイズ (px)
   SUB_NAME_SCALE_X: 0.74,    // サブキャラクター名の横幅縮小倍率 (0.76 = 横幅を狭くしてスタイリッシュな細長字に設定)
   MOVE_NAME_OFFSET_X: 43,    // ワザ名の左右位置オフセット (px, プラスで右移動、マイナスで左移動)
@@ -29,6 +29,18 @@ export const POKEMON_CARD_LAYOUT_CONFIG = {
   ABILITY_TITLE_OFFSET_Y: -18.5,  // 特性タイトルの上下位置 (px, マイナスで上移動)
   ABILITY_TITLE_OFFSET_X: 102, // 特性タイトルの左右位置 (px, 左端からの距離)
   ABILITY_DESC_OFFSET_Y: -14,    // 特性詳細（効果説明文）の上下位置 (px, マイナスで上移動)
+
+  // -------------------------------------------------------------------------
+  // 【右上エネルギーアイコン調整コード設定】
+  // -------------------------------------------------------------------------
+  HEADER_ENERGY_BORDER_WIDTH: 3.1, // 右上エネルギーアイコンの白い縁取りの太さ (px, デフォルト2.8px)
+  HEADER_ENERGY_SIZE: 31,          // 右上エネルギーアイコンのサイズ (px)
+
+  // -------------------------------------------------------------------------
+  // 【フッター・コピーライト位置調整コード設定】
+  // -------------------------------------------------------------------------
+  COPYRIGHT_OFFSET_Y: 3,           // コピーライト（著作権表示）の上下オフセット (px, プラスで下移動、マイナスで上移動)
+  FOOTER_OFFSET_Y: 0,              // フッター全体（イラストレーター・図鑑説明文・コピーライト）の上下オフセット (px)
 };
 
 // Stage image layer mapping (full-card scale overlay for existing assets)
@@ -44,7 +56,7 @@ interface PokemonCardProps {
   isInteractive?: boolean;
 }
 
-export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
+export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => {
   const typeMeta = TYPE_CONFIG[card.primaryType] || TYPE_CONFIG.colorless;
   const secondaryMeta = card.secondaryType ? TYPE_CONFIG[card.secondaryType] : null;
   const frameUrl = getFrameUrl(card.selectedFrame);
@@ -74,27 +86,8 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
         boxShadow: '0 20px 40px -10px rgba(0,0,0,0.6)',
       }}
     >
-      {/* Background Texture from assets/back/ (Full Card Base) */}
-      {TYPE_BACKGROUND_TEXTURES[card.primaryType] && (
-        <img
-          src={TYPE_BACKGROUND_TEXTURES[card.primaryType]}
-          alt="Card Background"
-          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-0 select-none"
-          loading="eager"
-          decoding="sync"
-        />
-      )}
-
-      {/* ARTWORK CONTAINER (Absolute positioned at z-10 so frame and stage overlays sit ON TOP of artwork) */}
-      <div 
-        className="absolute overflow-hidden bg-transparent group z-10"
-        style={{
-          top: '10.0%',
-          left: '8.65%',
-          width: '83.65%',
-          height: '37.5%',
-        }}
-      >
+      {/* 1. ARTWORK LAYER (Lowest priority z-1: Spans full canvas without tight box clipping, sitting strictly BEHIND background, frames & text) */}
+      <div className="absolute inset-0 w-full h-full z-1 pointer-events-none flex items-center justify-center">
         {/* Card Image */}
         {card.imageUrl ? (
           <img
@@ -108,18 +101,43 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
             }}
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-800/80 text-slate-300 text-xs">
+          <div 
+            className="absolute flex flex-col items-center justify-center bg-slate-800/80 text-slate-300 text-xs rounded-lg border border-dashed border-slate-600 pointer-events-auto"
+            style={{
+              top: '10.0%',
+              left: '8.65%',
+              width: '83.65%',
+              height: '37.5%',
+            }}
+          >
             <span>画像が設定されていません</span>
           </div>
         )}
 
         {/* Special Card Sub-Badge / Tera Overlay */}
         {card.customCardTag && (
-          <div className="absolute top-1.5 right-1.5 bg-slate-900/90 text-amber-300 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-400/60 shadow backdrop-blur-xs">
+          <div 
+            className="absolute bg-slate-900/90 text-amber-300 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-400/60 shadow backdrop-blur-xs z-20 pointer-events-auto"
+            style={{
+              top: '10.8%',
+              right: '9.5%',
+            }}
+          >
             {card.customCardTag}
           </div>
         )}
       </div>
+
+      {/* 2. Background Texture Layer from assets/back/ (z-10) */}
+      {TYPE_BACKGROUND_TEXTURES[card.primaryType] && (
+        <img
+          src={TYPE_BACKGROUND_TEXTURES[card.primaryType]}
+          alt="Card Background"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 select-none"
+          loading="eager"
+          decoding="sync"
+        />
+      )}
 
       {/* Frame Texture Layer from assets/frame/ (exact card size overlay) */}
       {frameUrl && (
@@ -248,24 +266,25 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
         <div
           className="absolute flex items-center justify-center pointer-events-none z-20"
           style={{
-            top: '3.8%',     // 上下の位置
-            right: '5.0%',   // 右端からの位置
-            width: '27px',   // アイコンの横幅
-            height: '27px',  // アイコンの高さ
+            top: '3.4%',     // 上下の位置
+            right: '4.6%',   // 右端からの位置
           }}
         >
           <EnergyIcon
             type={card.primaryType}
-            className="w-[27px] h-[27px]"
+            customSize={POKEMON_CARD_LAYOUT_CONFIG.HEADER_ENERGY_SIZE}
             showShadow={false}
             withWhiteBorder={true}
+            whiteBorderWidth={POKEMON_CARD_LAYOUT_CONFIG.HEADER_ENERGY_BORDER_WIDTH}
           />
           {secondaryMeta && (
             <EnergyIcon
               type={secondaryMeta.id}
-              className="w-[25px] h-[25px] -ml-2"
+              customSize={POKEMON_CARD_LAYOUT_CONFIG.HEADER_ENERGY_SIZE - 2}
+              className="-ml-2"
               showShadow={false}
               withWhiteBorder={true}
+              whiteBorderWidth={POKEMON_CARD_LAYOUT_CONFIG.HEADER_ENERGY_BORDER_WIDTH}
             />
           )}
         </div>
@@ -590,6 +609,7 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
             left: '6.0%',
             width: '88.0%',
             height: '5.6%',
+            transform: `translateY(${POKEMON_CARD_LAYOUT_CONFIG.FOOTER_OFFSET_Y}px)`,
           }}
         >
           <div className="flex items-end justify-between gap-2">
@@ -656,7 +676,10 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
             className={`text-center text-[7px] mt-0.5 tracking-tight font-medium ${
               isDarkType ? 'text-slate-400' : 'text-slate-600'
             }`}
-            style={textOutlineStyle}
+            style={{
+              transform: `translateY(${POKEMON_CARD_LAYOUT_CONFIG.COPYRIGHT_OFFSET_Y}px)`,
+              ...textOutlineStyle,
+            }}
           >
             ©2026 Pokémon/Nintendo/Creatures/GAME FREAK.
           </div>
@@ -665,5 +688,5 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
       </div>
     </div>
   );
-};
+});
 

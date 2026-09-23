@@ -26,6 +26,11 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Check if image is an uploaded file (Base64 data URL or blob)
+  const isUploadedFile = imageUrl.startsWith('data:') || imageUrl.startsWith('blob:');
+  // Display URL in text field only if it's a typed web link (http/https)
+  const displayUrl = isUploadedFile ? '' : imageUrl;
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -92,17 +97,34 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         </div>
       </div>
 
-      {/* Direct URL Input */}
+      {/* Uploaded File Status Badge */}
+      {isUploadedFile && (
+        <div className="flex items-center justify-between bg-emerald-950/50 border border-emerald-500/40 rounded-xl px-3 py-2 text-xs text-emerald-300 shadow-sm">
+          <span className="flex items-center gap-1.5 font-medium">
+            <ImageIcon className="w-4 h-4 text-emerald-400 shrink-0" />
+            アップロード済みの画像を使用中
+          </span>
+          <button
+            type="button"
+            onClick={() => onUpdate({ imageUrl: '' })}
+            className="text-slate-400 hover:text-rose-400 text-[11px] font-semibold underline cursor-pointer"
+          >
+            画像を削除
+          </button>
+        </div>
+      )}
+
+      {/* Direct Web URL Input */}
       <div>
         <label className="text-xs font-semibold text-slate-300 block mb-1">
-          または 画像URLを入力
+          または Web上の画像URLを入力
         </label>
         <input
           type="text"
-          value={imageUrl}
+          value={displayUrl}
           onChange={(e) => onUpdate({ imageUrl: e.target.value })}
           placeholder="https://example.com/character.png"
-          className="w-full bg-slate-850 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400"
+          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400"
         />
       </div>
 
