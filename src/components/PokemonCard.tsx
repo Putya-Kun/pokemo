@@ -69,6 +69,8 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
   const textOutlineStyle: React.CSSProperties = isDarkType
     ? {}
     : {
+        WebkitTextStroke: '0.8px #ffffff',
+        paintOrder: 'stroke fill',
         textShadow:
           '1px 1px 0 #ffffff, -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 0 0 2px #ffffff',
       };

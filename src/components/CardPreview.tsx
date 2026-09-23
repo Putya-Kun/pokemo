@@ -237,32 +237,70 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
   };
 
   const captureCardImage = async (cardElement: HTMLElement): Promise<string> => {
+    // 1. Wait for web fonts if available
     if (document.fonts && document.fonts.ready) {
       await document.fonts.ready;
     }
 
-    // Try toPng (html-to-image) first with skipFonts: true to prevent cross-origin stylesheet errors
+    // 2. Wait for all <img> tags inside cardElement to finish loading/decoding
+    const images = Array.from(cardElement.querySelectorAll('img'));
+    await Promise.all(
+      images.map((img) => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        return new Promise<void>((resolve) => {
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          setTimeout(resolve, 400);
+        });
+      })
+    );
+
+    // 3. Primary capture: toPng (html-to-image) with mobile-safe, robust options
+    // Notice: cacheBust must be FALSE so base64 data URLs & blob URLs are not corrupted on mobile
     try {
       return await toPng(cardElement, {
-        pixelRatio: 3,
+        pixelRatio: 2, // 2x retina (840x1172), fits mobile Safari memory limits safely
         quality: 0.98,
-        cacheBust: true,
+        cacheBust: false,
         skipFonts: true,
+        fontEmbedCSS: '',
+        width: 420,
+        height: 586,
+        style: {
+          transform: 'none',
+          transformOrigin: 'top left',
+          margin: '0',
+        },
+        filter: (node: HTMLElement) => {
+          // Skip external stylesheet links to avoid SecurityError on iOS Safari
+          if (node.tagName === 'LINK' && (node as HTMLLinkElement).rel === 'stylesheet') {
+            return false;
+          }
+          return true;
+        },
       });
     } catch (toPngErr) {
       console.warn('toPng failed, falling back to html2canvas:', toPngErr);
       const canvas = await html2canvas(cardElement, {
-        scale: 3,
+        scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: null,
         logging: false,
+        width: 420,
+        height: 586,
+        onclone: (clonedDoc) => {
+          const el = clonedDoc.getElementById('pokemon-card-canvas');
+          if (el) {
+            el.style.transform = 'none';
+          }
+        },
       });
       return canvas.toDataURL('image/png', 1.0);
     }
   };
 
-  const handleExport = async () => {
+  const handleExport = async (action: 'download' | 'share' | 'print' = isMobile ? 'share' : 'download') => {
     const cardElement = document.getElementById('pokemon-card-canvas');
     if (!cardElement) return;
 
@@ -271,15 +309,34 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
       const prevRotation = { ...rotation };
       setRotation({ x: 0, y: 0 });
 
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      // Small delay to ensure rotation reset has rendered
+      await new Promise((resolve) => setTimeout(resolve, 120));
 
       const dataUrl = await captureCardImage(cardElement);
       const filename = `${card.name || 'pokemon_card'}_${card.kind}_${Date.now()}.png`;
 
-      if (isMobile) {
-        await handleMobileShare(dataUrl, filename);
-      } else {
+      if (action === 'print') {
         handlePCPrintView(dataUrl);
+      } else if (action === 'download') {
+        // Direct browser file download
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // 'share' (Mobile share / save)
+        // First trigger direct download to guarantee immediate file save
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Then open native share sheet / preview modal for saving to Photos
+        await handleMobileShare(dataUrl, filename);
       }
 
       setRotation(prevRotation);
@@ -311,21 +368,34 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
 
         <div className="h-4 w-px bg-slate-700" />
 
-        {/* Action Button (Mobile: 共有 | PC: 印刷) */}
+        {/* Action Button: 保存 / 共有 (ビューアーのプレビューを完全キャプチャして保存) */}
         <button
           type="button"
           disabled={isExporting}
-          onClick={handleExport}
+          onClick={() => handleExport(isMobile ? 'share' : 'download')}
           className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow transition-all disabled:opacity-50 cursor-pointer"
+          title="ビューアーのプレビューをそのまま高品質画像として保存します"
         >
           {isExporting ? (
             <RefreshCw className="w-3.5 h-3.5 animate-spin" />
           ) : isMobile ? (
             <Share2 className="w-3.5 h-3.5" />
           ) : (
-            <Printer className="w-3.5 h-3.5" />
+            <Download className="w-3.5 h-3.5" />
           )}
-          <span>{isMobile ? '共有' : '印刷'}</span>
+          <span>{isMobile ? '共有・保存' : '画像保存'}</span>
+        </button>
+
+        {/* 印刷ボタン (PC印刷用) */}
+        <button
+          type="button"
+          disabled={isExporting}
+          onClick={() => handleExport('print')}
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-700/80 hover:bg-slate-700 text-slate-200 shadow transition-all disabled:opacity-50 cursor-pointer"
+          title="カードの実寸サイズ(63mm×88mm)で印刷します"
+        >
+          <Printer className="w-3.5 h-3.5" />
+          <span>印刷</span>
         </button>
       </div>
 
@@ -378,9 +448,9 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
 
       <div className="text-xs text-slate-400 text-center max-w-sm">
         {isMobile ? (
-          <>💡 「共有」をタップすると、iOS/Androidの標準共有画面が開き画像やメッセージを共有できます。</>
+          <>💡 ビューアーのプレビューをそのまま（文字の白縁取り・イラスト完全再現）高品質PNG画像として保存・共有できます。</>
         ) : (
-          <>💡 「印刷」をクリックすると、実際のカードサイズ (63mm×88mm) で印刷画面が開きます。</>
+          <>💡 ビューアーのプレビューそのまま高品質画像保存、または実寸(63mm×88mm)で印刷が可能です。</>
         )}
       </div>
 
