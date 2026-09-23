@@ -1,10 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { CardData } from '../types';
 import { PokemonCard } from './PokemonCard';
 import { TrainerCard } from './TrainerCard';
 import { toPng } from 'html-to-image';
 import html2canvas from 'html2canvas';
-import { Share2, Printer, RefreshCw, Layers, Download, X } from 'lucide-react';
+import { Printer, RefreshCw, Layers, Share2 } from 'lucide-react';
 
 interface CardPreviewProps {
   card: CardData;
@@ -17,15 +17,14 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
   const [isExporting, setIsExporting] = useState(false);
   const [is3DMode, setIs3DMode] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
-  const [mobileShareModalUrl, setMobileShareModalUrl] = useState<string | null>(null);
 
   // Direct drag/swipe image position adjustment state
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const dragStartRef = useRef<{ clientX: number; clientY: number; posX: number; posY: number } | null>(null);
 
   const isMobile = typeof window !== 'undefined' && (
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-    (navigator.maxTouchPoints > 0 && window.innerWidth < 1024)
+    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+    (navigator.maxTouchPoints > 1 && /Macintosh/i.test(navigator.userAgent))
   );
 
   // 3D Tilt handler
@@ -39,9 +38,41 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
     setRotation({ x: rotateX, y: rotateY });
   };
 
-  // Drag start (Mouse down / Touch start)
-  const handlePointerDown = (clientX: number, clientY: number) => {
+  // 枠の中（イラスト枠）のタッチ・クリック判定
+  const isInsideImageFrame = (clientX: number, clientY: number, target: EventTarget | null): boolean => {
+    // 1. data-image-drag-handle 属性の要素またはその子孫であるかを判定
+    if (target instanceof Element && target.closest('[data-image-drag-handle="true"]')) {
+      return true;
+    }
+
+    // 2. 座標による判定（カード要素の枠内にあるか検証）
+    const canvas = document.getElementById('pokemon-card-canvas');
+    if (!canvas) return false;
+
+    const rect = canvas.getBoundingClientRect();
+    const relX = (clientX - rect.left) / rect.width;
+    const relY = (clientY - rect.top) / rect.height;
+
+    if (card.kind === 'trainer') {
+      if (card.isFullArt) {
+        return relX >= 0 && relX <= 1 && relY >= 0 && relY <= 1;
+      }
+      // トレーナーズ枠: top 16.5%〜52.5%, left 6.4%〜93.5%
+      return relX >= 0.05 && relX <= 0.95 && relY >= 0.15 && relY <= 0.54;
+    } else {
+      // ポケモンカード枠: top 10.0%〜48.0%, left 8.6%〜92.3%
+      return relX >= 0.07 && relX <= 0.93 && relY >= 0.09 && relY <= 0.49;
+    }
+  };
+
+  // Drag start (Mouse down / Touch start) - 枠の中が選択された場合のみ開始
+  const handlePointerDown = (clientX: number, clientY: number, target: EventTarget | null) => {
     if (is3DMode || !card.imageUrl || !onUpdateCard) return;
+
+    if (!isInsideImageFrame(clientX, clientY, target)) {
+      return;
+    }
+
     setIsDraggingImage(true);
     dragStartRef.current = {
       clientX,
@@ -83,46 +114,38 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
     }
   };
 
-  // 1. Mobile Native Share Sheet (iOS / Android)
-  const handleMobileShare = async (dataUrl: string, filename: string) => {
-    let shareHandled = false;
+  // ドラッグ操作中のウィンドウ全域トラッキング（ドラッグ中にマウスや指がカード外に出ても滑らかに追従）
+  useEffect(() => {
+    if (!isDraggingImage) return;
 
-    try {
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      const file = new File([blob], filename, { type: 'image/png' });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: card.name || 'ポケモンカード',
-          text: `「${card.name || 'オリジナルカード'}」を作成しました！`,
-          files: [file],
-        });
-        shareHandled = true;
-      } else if (navigator.share) {
-        await navigator.share({
-          title: card.name || 'ポケモンカード',
-          text: `「${card.name || 'オリジナルカード'}」を作成しました！`,
-          url: window.location.href,
-        });
-        shareHandled = true;
+    const onGlobalMove = (e: MouseEvent | TouchEvent) => {
+      if ('touches' in e && e.touches.length > 0) {
+        handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+      } else if ('clientX' in e) {
+        handlePointerMove((e as MouseEvent).clientX, (e as MouseEvent).clientY);
       }
-    } catch (shareErr) {
-      if ((shareErr as Error)?.name === 'AbortError') {
-        // User closed the native share sheet
-        shareHandled = true;
-      } else {
-        console.warn('Native share failed (e.g. iframe restriction), opening mobile preview overlay:', shareErr);
-      }
-    }
+    };
 
-    // If native share was blocked by browser/iframe policy, open mobile modal with image
-    if (!shareHandled) {
-      setMobileShareModalUrl(dataUrl);
-    }
-  };
+    const onGlobalUp = () => {
+      handlePointerUp();
+    };
 
-  // 2. PC Dedicated Print View (window.print())
+    window.addEventListener('mousemove', onGlobalMove, { passive: true });
+    window.addEventListener('mouseup', onGlobalUp);
+    window.addEventListener('touchmove', onGlobalMove, { passive: true });
+    window.addEventListener('touchend', onGlobalUp);
+    window.addEventListener('touchcancel', onGlobalUp);
+
+    return () => {
+      window.removeEventListener('mousemove', onGlobalMove);
+      window.removeEventListener('mouseup', onGlobalUp);
+      window.removeEventListener('touchmove', onGlobalMove);
+      window.removeEventListener('touchend', onGlobalUp);
+      window.removeEventListener('touchcancel', onGlobalUp);
+    };
+  }, [isDraggingImage]);
+
+  // Dedicated Print / Save Preview (window.print())
   const handlePCPrintView = (dataUrl: string) => {
     const printWindow = window.open('', '_blank');
 
@@ -300,10 +323,11 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
     }
   };
 
-  const handleExport = async (action: 'download' | 'share' | 'print' = isMobile ? 'share' : 'download') => {
+  const handleExport = async () => {
     const cardElement = document.getElementById('pokemon-card-canvas');
     if (!cardElement) return;
 
+    let dataUrl = '';
     try {
       setIsExporting(true);
       const prevRotation = { ...rotation };
@@ -312,37 +336,47 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
       // Small delay to ensure rotation reset has rendered
       await new Promise((resolve) => setTimeout(resolve, 120));
 
-      const dataUrl = await captureCardImage(cardElement);
-      const filename = `${card.name || 'pokemon_card'}_${card.kind}_${Date.now()}.png`;
+      dataUrl = await captureCardImage(cardElement);
 
-      if (action === 'print') {
-        handlePCPrintView(dataUrl);
-      } else if (action === 'download') {
-        // Direct browser file download
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      if (isMobile) {
+        // iOS / Android: Open native share sheet with the captured PNG
+        const filename = `${card.name || 'pokemon_card'}_${Date.now()}.png`;
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const file = new File([blob], filename, { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: card.name || 'ポケモンカード',
+            text: `「${card.name || 'オリジナルカード'}」を作成しました！`,
+            files: [file],
+          });
+        } else if (navigator.share) {
+          await navigator.share({
+            title: card.name || 'ポケモンカード',
+            text: `「${card.name || 'オリジナルカード'}」を作成しました！`,
+            url: window.location.href,
+          });
+        } else {
+          handlePCPrintView(dataUrl);
+        }
       } else {
-        // 'share' (Mobile share / save)
-        // First trigger direct download to guarantee immediate file save
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        // Then open native share sheet / preview modal for saving to Photos
-        await handleMobileShare(dataUrl, filename);
+        // PC: Open print/save preview
+        handlePCPrintView(dataUrl);
       }
 
       setRotation(prevRotation);
     } catch (err) {
-      console.error('Failed to export card image:', err);
-      alert('画像の処理中にエラーが発生しました。別のブラウザでお試しください。');
+      if ((err as Error)?.name === 'AbortError') {
+        // User cancelled native share sheet
+      } else {
+        console.warn('Share failed, opening fallback preview:', err);
+        if (dataUrl) {
+          handlePCPrintView(dataUrl);
+        } else {
+          alert('画像の処理中にエラーが発生しました。別のブラウザでお試しください。');
+        }
+      }
     } finally {
       setIsExporting(false);
     }
@@ -368,47 +402,35 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
 
         <div className="h-4 w-px bg-slate-700" />
 
-        {/* Action Button: 保存 / 共有 (ビューアーのプレビューを完全キャプチャして保存) */}
+        {/* ボタン (iOS/Android: 共有 | PC: 保存) - 青色 */}
         <button
           type="button"
           disabled={isExporting}
-          onClick={() => handleExport(isMobile ? 'share' : 'download')}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow transition-all disabled:opacity-50 cursor-pointer"
-          title="ビューアーのプレビューをそのまま高品質画像として保存します"
+          onClick={handleExport}
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-md transition-all disabled:opacity-50 cursor-pointer"
+          title={isMobile ? '共有メニューを開きます' : 'カードの保存・印刷プレビュー画面を開きます'}
         >
           {isExporting ? (
             <RefreshCw className="w-3.5 h-3.5 animate-spin" />
           ) : isMobile ? (
             <Share2 className="w-3.5 h-3.5" />
           ) : (
-            <Download className="w-3.5 h-3.5" />
+            <Printer className="w-3.5 h-3.5" />
           )}
-          <span>{isMobile ? '共有・保存' : '画像保存'}</span>
-        </button>
-
-        {/* 印刷ボタン (PC印刷用) */}
-        <button
-          type="button"
-          disabled={isExporting}
-          onClick={() => handleExport('print')}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-700/80 hover:bg-slate-700 text-slate-200 shadow transition-all disabled:opacity-50 cursor-pointer"
-          title="カードの実寸サイズ(63mm×88mm)で印刷します"
-        >
-          <Printer className="w-3.5 h-3.5" />
-          <span>印刷</span>
+          <span>{isMobile ? '共有' : '保存'}</span>
         </button>
       </div>
 
       {/* Card Rendering Box */}
       <div
         ref={cardRef}
-        onMouseDown={(e) => handlePointerDown(e.clientX, e.clientY)}
+        onMouseDown={(e) => handlePointerDown(e.clientX, e.clientY, e.target)}
         onMouseMove={(e) => handlePointerMove(e.clientX, e.clientY)}
         onMouseUp={handlePointerUp}
         onMouseLeave={handlePointerUp}
         onTouchStart={(e) => {
           if (e.touches.length > 0) {
-            handlePointerDown(e.touches[0].clientX, e.touches[0].clientY);
+            handlePointerDown(e.touches[0].clientX, e.touches[0].clientY, e.target);
           }
         }}
         onTouchMove={(e) => {
@@ -418,11 +440,7 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
         }}
         onTouchEnd={handlePointerUp}
         className={`card-perspective w-full flex items-center justify-center py-2 min-h-[480px] sm:min-h-[600px] overflow-hidden select-none ${
-          is3DMode
-            ? 'touch-none cursor-grab active:cursor-grabbing'
-            : card.imageUrl
-            ? 'touch-none cursor-move active:cursor-grabbing'
-            : ''
+          is3DMode ? 'touch-none cursor-grab active:cursor-grabbing' : ''
         }`}
         style={{
           perspective: 1200,
@@ -448,54 +466,11 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
 
       <div className="text-xs text-slate-400 text-center max-w-sm">
         {isMobile ? (
-          <>💡 ビューアーのプレビューをそのまま（文字の白縁取り・イラスト完全再現）高品質PNG画像として保存・共有できます。</>
+          <>💡 「共有」をタップすると共有メニューが開き、端末の写真への追加や共有ができます。</>
         ) : (
-          <>💡 ビューアーのプレビューそのまま高品質画像保存、または実寸(63mm×88mm)で印刷が可能です。</>
+          <>💡 「保存」をクリックするとプレビュー画面が開き、実寸(63mm×88mm)での印刷や画像保存が可能です。</>
         )}
       </div>
-
-      {/* Mobile Share Fallback Modal (Used if iframe prevents native share sheet) */}
-      {mobileShareModalUrl && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 max-w-xs w-full flex flex-col items-center gap-4 text-center shadow-2xl animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between w-full border-b border-slate-800 pb-2">
-              <span className="text-sm font-bold text-slate-100">カード画像プレビュー</span>
-              <button
-                type="button"
-                onClick={() => setMobileShareModalUrl(null)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <img
-              src={mobileShareModalUrl}
-              alt="カード画像"
-              className="w-full h-auto rounded-xl shadow-lg border border-slate-700/60"
-            />
-            <p className="text-xs text-amber-300 font-medium leading-relaxed">
-              画像を長押しすると「写真に追加」や「共有」メニューが表示されます 📲
-            </p>
-            <div className="flex gap-2 w-full">
-              <a
-                href={mobileShareModalUrl}
-                download={`${card.name || 'pokemon_card'}.png`}
-                className="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow"
-              >
-                <Download className="w-4 h-4" />
-                画像ダウンロード
-              </a>
-              <button
-                type="button"
-                onClick={() => setMobileShareModalUrl(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
-              >
-                閉じる
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 });

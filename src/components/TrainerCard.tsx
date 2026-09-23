@@ -142,7 +142,7 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
             <img
               src={card.imageUrl}
               alt={card.name}
-              className="w-full h-full object-cover transition-transform"
+              className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
               style={{
                 transform: `scale(${card.imageScale}) translate(${card.imagePositionX}%, ${card.imagePositionY}%)`,
@@ -162,6 +162,25 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
             </div>
           )}
         </div>
+
+        {/* Interactive Image Drag Handle (枠の中だけを選択してスライド・移動できるようにする) */}
+        {card.imageUrl && (
+          <div
+            data-image-drag-handle="true"
+            className="absolute z-35 cursor-move touch-none"
+            title="ドラッグまたはスワイプで画像位置を調整できます"
+            style={
+              card.isFullArt
+                ? { inset: 0 }
+                : {
+                    top: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_TOP,
+                    left: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_LEFT,
+                    width: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_WIDTH,
+                    height: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_HEIGHT,
+                  }
+            }
+          />
+        )}
 
         {/* EFFECT TEXT BOX (トレーナーズカードの効果説明 - 完全透明・スクロールなし) */}
         <div

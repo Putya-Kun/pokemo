@@ -95,7 +95,7 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
           <img
             src={card.imageUrl}
             alt={card.name}
-            className="w-full h-full object-cover transition-transform"
+            className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
             style={{
               transform: `scale(${card.imageScale}) translate(${card.imagePositionX}%, ${card.imagePositionY}%)`,
@@ -171,6 +171,21 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
           className="absolute inset-0 w-full h-full object-fill pointer-events-none z-35 select-none"
           loading="eager"
           decoding="sync"
+        />
+      )}
+
+      {/* Interactive Image Drag Handle (枠の中だけを選択してスライド・移動できるようにする) */}
+      {card.imageUrl && (
+        <div
+          data-image-drag-handle="true"
+          className="absolute z-45 cursor-move touch-none"
+          title="ドラッグまたはスワイプで画像位置を調整できます"
+          style={{
+            top: '10.0%',
+            left: '8.65%',
+            width: '83.65%',
+            height: '38.0%',
+          }}
         />
       )}
 

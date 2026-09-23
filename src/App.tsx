@@ -55,10 +55,23 @@ export default function App() {
   };
 
   const handleUpdateCard = (updated: Partial<CardData>) => {
-    setCurrentCard((prev) => ({
-      ...prev,
-      ...updated,
-    } as CardData));
+    setCurrentCard((prev) => {
+      const next = {
+        ...prev,
+        ...updated,
+      } as CardData;
+
+      // 画像の移動・拡大縮小などスライド操作時は遅延なくリアルタイム同期
+      if (
+        updated.imagePositionX !== undefined ||
+        updated.imagePositionY !== undefined ||
+        updated.imageScale !== undefined
+      ) {
+        setPreviewCard(next);
+      }
+
+      return next;
+    });
   };
 
   const handleSwitchKind = (kind: 'pokemon' | 'trainer') => {
