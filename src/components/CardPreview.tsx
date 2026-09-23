@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { CardData } from '../types';
 import { PokemonCard } from './PokemonCard';
 import { TrainerCard } from './TrainerCard';
+import { domToPng } from 'modern-screenshot';
 import { toPng } from 'html-to-image';
 import { Printer, RefreshCw, Layers, Share2, Download, X } from 'lucide-react';
 
@@ -13,6 +14,7 @@ interface CardPreviewProps {
 
 export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpdateCard }) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const scaleWrapperRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [is3DMode, setIs3DMode] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
@@ -279,9 +281,7 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
     );
 
     const captureOptions = {
-      pixelRatio: 2, // 840x1172 for crisp high-resolution cards
-      quality: 1.0,
-      cacheBust: false,
+      scale: 2, // 840x1172 for crisp high-resolution cards
       width: 420,
       height: 586,
       style: {
@@ -289,17 +289,38 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
         transformOrigin: 'top left',
         margin: '0',
       },
+      filter: (node: Node) => {
+        if (node instanceof HTMLElement && node.getAttribute('data-image-drag-handle')) {
+          return false;
+        }
+        return true;
+      },
     };
 
-    // Safari warm-up pass
+    // Capture the on-screen preview card directly using modern-screenshot (with fallback to toPng)
     try {
-      await toPng(cardElement, captureOptions);
-    } catch {
-      // ignore warmup notice
+      return await domToPng(cardElement, captureOptions);
+    } catch (modernErr) {
+      console.warn('domToPng notice, fallback to toPng:', modernErr);
+      return await toPng(cardElement, {
+        pixelRatio: 2,
+        quality: 1.0,
+        cacheBust: false,
+        width: 420,
+        height: 586,
+        style: {
+          transform: 'none',
+          transformOrigin: 'top left',
+          margin: '0',
+        },
+        filter: (node: HTMLElement) => {
+          if (node.getAttribute && node.getAttribute('data-image-drag-handle')) {
+            return false;
+          }
+          return true;
+        },
+      });
     }
-
-    // Final high-fidelity capture of the on-screen preview element directly
-    return await toPng(cardElement, captureOptions);
   };
 
   const handleExport = async () => {
@@ -312,10 +333,22 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
       const prevRotation = { ...rotation };
       setRotation({ x: 0, y: 0 });
 
-      // Small delay to ensure rotation reset has rendered
+      // Temporarily expand preview wrapper to natural 100% scale so capture photographs exact 420x586 layout
+      if (scaleWrapperRef.current) {
+        scaleWrapperRef.current.style.transform = 'none';
+        scaleWrapperRef.current.style.transition = 'none';
+      }
+
+      // Small delay to ensure on-screen preview layout is fully painted
       await new Promise((resolve) => setTimeout(resolve, 80));
 
       dataUrl = await captureCardImage(cardElement);
+
+      // Restore preview wrapper scale
+      if (scaleWrapperRef.current) {
+        scaleWrapperRef.current.style.transform = '';
+        scaleWrapperRef.current.style.transition = '';
+      }
 
       if (isMobile) {
         const filename = `${card.name || 'pokemon_card'}_${Date.now()}.png`;
@@ -365,6 +398,10 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
         alert('画像の保存中に問題が発生しました。もう一度お試しください。');
       }
     } finally {
+      if (scaleWrapperRef.current) {
+        scaleWrapperRef.current.style.transform = '';
+        scaleWrapperRef.current.style.transition = '';
+      }
       setIsExporting(false);
     }
   };
@@ -434,6 +471,7 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
         }}
       >
         <div
+          ref={scaleWrapperRef}
           className="scale-[0.80] min-[400px]:scale-[0.88] sm:scale-100 origin-center transition-transform shrink-0"
           style={{
             transform: is3DMode
