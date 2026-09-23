@@ -1,5 +1,4 @@
 import React, { useRef } from 'react';
-import { SAMPLE_ARTWORKS } from '../../constants/cardData';
 import { Upload, Image as ImageIcon, ZoomIn, Move } from 'lucide-react';
 
 interface ImageUploaderProps {
@@ -107,43 +106,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         />
       </div>
 
-      {/* Sample Artworks Selector */}
-      <div>
-        <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-          サンプルイラストから選択
-        </label>
-        <div className="grid grid-cols-4 gap-2">
-          {SAMPLE_ARTWORKS.map((sample) => (
-            <button
-              key={sample.id}
-              type="button"
-              onClick={() =>
-                onUpdate({
-                  imageUrl: sample.url,
-                  imageScale: 1.0,
-                  imagePositionX: 0,
-                  imagePositionY: 0,
-                })
-              }
-              className={`relative rounded-lg overflow-hidden border-2 aspect-square group transition-all ${
-                imageUrl === sample.url
-                  ? 'border-amber-400 ring-2 ring-amber-400/40'
-                  : 'border-slate-700 hover:border-slate-500'
-              }`}
-            >
-              <img
-                src={sample.url}
-                alt={sample.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-x-0 bottom-0 bg-slate-950/80 p-0.5 text-[9px] text-center text-slate-200 truncate">
-                {sample.name}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
+
 
       {/* Image Position & Scale Controls */}
       {imageUrl && (
