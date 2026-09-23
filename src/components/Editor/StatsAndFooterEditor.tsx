@@ -199,7 +199,7 @@ export const StatsAndFooterEditor: React.FC<StatsAndFooterEditorProps> = ({
               type="text"
               value={card.illustrator}
               onChange={(e) => onUpdate({ illustrator: e.target.value })}
-              placeholder="例: Ken Sugimori, あなたの名前"
+              placeholder="例: Hiro Iwai, あなたの名前"
               className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
             />
           </div>

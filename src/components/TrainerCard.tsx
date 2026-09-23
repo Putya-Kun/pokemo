@@ -297,7 +297,7 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
                   transform: `translateY(${TRAINER_CARD_LAYOUT_CONFIG.ILLUSTRATOR_OFFSET_Y}px)`,
                 }}
               >
-                Illus.{card.illustrator || 'オリジナル'}
+                Illus.{card.illustrator || 'Hiro Iwai'}
               </span>
               <div 
                 className="flex items-center gap-1 text-[8px]"

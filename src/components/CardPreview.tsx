@@ -223,10 +223,10 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
         </head>
         <body>
           <div class="card-box">
-            <h2 class="no-print" style="margin:0; font-size:18px; font-weight:800;">🎴 ポケモンカード 印刷</h2>
+            <h2 class="no-print" style="margin:0; font-size:18px; font-weight:800;">ポケモンカード 印刷</h2>
             <img src="${dataUrl}" class="print-card" alt="カード印刷プレビュー" />
             <div class="btn-group no-print">
-              <button class="btn btn-print" onclick="window.print()">🖨️ 今すぐ印刷する</button>
+              <button class="btn btn-print" onclick="window.print()">今すぐ印刷する</button>
               <button class="btn btn-close" onclick="window.close()">閉じる</button>
             </div>
             <p class="hint no-print">※ 実物規格サイズ (63mm × 88mm) に合わせて配置されています</p>
@@ -591,9 +591,9 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
 
       <div className="text-xs text-slate-400 text-center max-w-sm">
         {isMobile ? (
-          <>💡 「共有」をタップすると共有メニューが開き、端末の写真への追加や共有ができます。</>
+          <>「共有」をタップすると共有メニューが開き、端末の写真への追加や共有ができます。</>
         ) : (
-          <>💡 「保存」をクリックするとプレビュー画面が開き、実寸(63mm×88mm)での印刷や画像保存が可能です。</>
+          <>「保存」をクリックするとプレビュー画面が開き、実寸(63mm×88mm)での印刷や画像保存が可能です。</>
         )}
       </div>
 
@@ -609,7 +609,7 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
           >
             <div className="flex items-center justify-between w-full">
               <span className="text-base font-bold text-white flex items-center gap-1.5">
-                🎴 カード画像の共有・保存
+                カード画像の共有・保存
               </span>
               <button
                 type="button"
@@ -621,7 +621,7 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
             </div>
 
             <p className="text-xs text-amber-300/90 text-center bg-amber-950/40 border border-amber-500/30 rounded-xl p-2.5 w-full leading-relaxed">
-              💡 <strong>画像を長押し</strong>して「写真に追加」するか、下のボタンから保存できます
+              <strong>画像を長押し</strong>して「写真に追加」するか、下のボタンから保存できます
             </p>
 
             {/* Rendered image ready for direct long-press save on iOS */}

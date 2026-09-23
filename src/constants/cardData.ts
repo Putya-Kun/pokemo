@@ -319,7 +319,7 @@ export const PRESET_CARDS: { id: string; name: string; tag: string; data: Pokemo
       resistanceValue: '-30',
       retreatCost: 1,
       flavorText: 'スクラップ工場に 放置された エンジンに 謎の 毒ポケモンが 入り込んで 生まれたと 言われる。',
-      illustrator: 'Shin Nagasawa',
+      illustrator: 'Hiro Iwai',
       cardNumber: '059/078',
       setSymbol: 'sv1S',
       regulationMark: 'G',

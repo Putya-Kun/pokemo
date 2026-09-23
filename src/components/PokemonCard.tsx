@@ -16,6 +16,7 @@ export const POKEMON_CARD_LAYOUT_CONFIG = {
   MOVE_NAME_OFFSET_X: 43,    // ワザ名の左右位置オフセット (px, プラスで右移動、マイナスで左移動)
   MOVE_ENERGY_OFFSET_X: -5,  // ワザのエネルギーアイコンの左右位置オフセット (px, マイナスで左移動、プラスで右移動)
   MOVE_ENERGY_GAP: 1.5,      // ワザの必要エネルギーアイコン同士の間隔 (px, 小さくすると狭くなります。例: 0〜4)
+  RETREAT_ENERGY_GAP: 1.0,   // にげる必要エネルギーアイコン同士の間隔 (px, 小さくすると狭くなります。例: 0〜3)
   MOVE_DESC_OFFSET_X: -4,     // ワザ詳細（効果説明文）の左右位置オフセット (px, プラスで右移動、マイナスで左移動)
   MOVE_DESC_OFFSET_Y: 0,     // ワザ詳細（効果説明文）の上下位置オフセット (px, マイナスで上移動、プラスで下移動)
   MOVE_NAME_SCALE: 1.0,     // ワザ名のフォントサイズ倍率 (1.0 = 100%)
@@ -634,7 +635,12 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
             </span>
 
             {/* にげるエネルギーアイコン */}
-            <div className="flex items-center gap-1 ml-0.5">
+            <div 
+              className="flex items-center ml-0.5"
+              style={{
+                gap: `${POKEMON_CARD_LAYOUT_CONFIG.RETREAT_ENERGY_GAP}px`,
+              }}
+            >
               {card.retreatCost > 0 && (
                 Array.from({ length: Math.min(card.retreatCost, 4) }).map((_, i) => (
                   <EnergyIcon key={i} type="colorless" size="xs" showShadow={false} />
@@ -663,7 +669,7 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
                 className="font-bold italic text-[8.5px] leading-tight text-slate-800 card-text-stroke"
                 style={textOutlineStyle}
               >
-                Illus.{card.illustrator || 'オリジナル'}
+                Illus.{card.illustrator || 'Hiro Iwai'}
               </span>
               <div className="flex items-center gap-1 text-[8px]">
                 {/* 左：レギュレーションマーク（白地＋黒枠の細長い縦長角丸四角形） */}
