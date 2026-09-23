@@ -47,14 +47,12 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
   const isEx = card.suffix.toLowerCase() === 'ex';
   const isDarkType = card.primaryType === 'darkness';
 
-  // 【全体の文字用：薄い白縁取り（悪タイプの場合は縁取りなし）】
+  // 【全体の文字用：白縁取り（悪タイプの場合は縁取りなし）】
   const textOutlineStyle: React.CSSProperties = isDarkType
     ? {}
     : {
-        WebkitTextStroke: '0.8px rgba(255,255,255,0.95)',
-        paintOrder: 'stroke fill',
         textShadow:
-          '-1px -1px 0 rgba(255,255,255,0.95), 1px -1px 0 rgba(255,255,255,0.95), -1px 1px 0 rgba(255,255,255,0.95), 1px 1px 0 rgba(255,255,255,0.95), 0 0 2px rgba(255,255,255,0.95)',
+          '1px 1px 0 #ffffff, -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 0 0 2px #ffffff',
       };
 
   return (

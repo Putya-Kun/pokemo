@@ -206,23 +206,23 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
       await document.fonts.ready;
     }
 
+    // Try toPng (html-to-image) first as it produces pristine high-dpi vector crispness
     try {
+      return await toPng(cardElement, {
+        pixelRatio: 3,
+        quality: 0.98,
+        cacheBust: true,
+      });
+    } catch (toPngErr) {
+      console.warn('toPng failed, falling back to html2canvas:', toPngErr);
       const canvas = await html2canvas(cardElement, {
-        scale: 3, // Crisp high-res 3x output
+        scale: 3,
         useCORS: true,
         allowTaint: true,
         backgroundColor: null,
         logging: false,
-        imageTimeout: 5000,
       });
       return canvas.toDataURL('image/png', 1.0);
-    } catch (h2cError) {
-      console.warn('html2canvas failed, falling back to html-to-image:', h2cError);
-      return await toPng(cardElement, {
-        pixelRatio: 3,
-        quality: 0.95,
-        cacheBust: true,
-      });
     }
   };
 

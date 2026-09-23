@@ -31,17 +31,13 @@ export const EnergyIcon: React.FC<EnergyIconProps> = ({
 
   return (
     <div
-      className={`inline-flex items-center justify-center rounded-full shrink-0 relative overflow-hidden select-none transition-transform ${sizeMap[size]} ${
-        withWhiteBorder ? 'ring-[1.5px] ring-white/95' : ''
-      } ${className}`}
+      className={`inline-flex items-center justify-center rounded-full shrink-0 relative overflow-hidden select-none transition-transform ${sizeMap[size]} ${className}`}
       style={{
+        border: withWhiteBorder ? '1.5px solid #ffffff' : 'none',
+        boxSizing: 'border-box',
         boxShadow: showShadow
-          ? withWhiteBorder
-            ? '0 0 0 1.5px #ffffff, 0 1.5px 3.5px rgba(0,0,0,0.4)'
-            : '0 2px 4px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.6)'
-          : withWhiteBorder
-            ? '0 0 0 1.5px #ffffff'
-            : undefined,
+          ? '0 1.5px 3.5px rgba(0,0,0,0.4)'
+          : undefined,
       }}
       title={type}
     >
