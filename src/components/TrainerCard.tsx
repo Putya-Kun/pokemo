@@ -11,7 +11,7 @@ export const TrainerCard: React.FC<TrainerCardProps> = ({ card }) => {
   const catConfig = TRAINER_CATEGORY_CONFIG[card.category] || TRAINER_CATEGORY_CONFIG.item;
   const isAceSpec = card.category === 'ace_spec';
   const frameUrl = getFrameUrl(card.selectedFrame);
-  const trainerBgUrl = TRAINER_BACKGROUND_TEXTURES[card.category] || '/assets/back/basic-normal.png';
+  const trainerBgUrl = TRAINER_BACKGROUND_TEXTURES[card.category] || 'assets/back/basic-normal.png';
 
   return (
     <div

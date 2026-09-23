@@ -2,54 +2,54 @@ import { PokemonType } from '../types';
 
 // Energy icon image paths located in assets/eneicon/
 export const ENERGY_IMAGE_URLS: Record<PokemonType, string> = {
-  fairy: '/assets/eneicon/fairy.png',
-  fire: '/assets/eneicon/fire.png',
-  grass: '/assets/eneicon/grass.png',
-  fighting: '/assets/eneicon/fighting.png',
-  metal: '/assets/eneicon/steel.png',
-  darkness: '/assets/eneicon/dark.png',
-  dragon: '/assets/eneicon/dragon.png',
-  psychic: '/assets/eneicon/psychic.png',
-  colorless: '/assets/eneicon/normal.png',
-  lightning: '/assets/eneicon/electric.png',
-  water: '/assets/eneicon/water.png',
+  fairy: 'assets/eneicon/fairy.png',
+  fire: 'assets/eneicon/fire.png',
+  grass: 'assets/eneicon/grass.png',
+  fighting: 'assets/eneicon/fighting.png',
+  metal: 'assets/eneicon/steel.png',
+  darkness: 'assets/eneicon/dark.png',
+  dragon: 'assets/eneicon/dragon.png',
+  psychic: 'assets/eneicon/psychic.png',
+  colorless: 'assets/eneicon/normal.png',
+  lightning: 'assets/eneicon/electric.png',
+  water: 'assets/eneicon/water.png',
 };
 
 // Type background textures from assets/back/
 export const TYPE_BACKGROUND_TEXTURES: Partial<Record<PokemonType, string>> = {
-  grass: '/assets/back/basic-grass.png',
-  fire: '/assets/back/basic-fire.png',
-  water: '/assets/back/basic-water.png',
-  lightning: '/assets/back/basic-electric.png',
-  psychic: '/assets/back/basic-psychic.png',
-  fighting: '/assets/back/basic-fighting.png',
-  darkness: '/assets/back/basic-dark.png',
-  metal: '/assets/back/basic-steel.png',
-  dragon: '/assets/back/basic-dragon.png',
-  colorless: '/assets/back/basic-normal.png',
+  grass: 'assets/back/basic-grass.png',
+  fire: 'assets/back/basic-fire.png',
+  water: 'assets/back/basic-water.png',
+  lightning: 'assets/back/basic-electric.png',
+  psychic: 'assets/back/basic-psychic.png',
+  fighting: 'assets/back/basic-fighting.png',
+  darkness: 'assets/back/basic-dark.png',
+  metal: 'assets/back/basic-steel.png',
+  dragon: 'assets/back/basic-dragon.png',
+  colorless: 'assets/back/basic-normal.png',
 };
 
 // Trainer card background textures from assets/back/
 export const TRAINER_BACKGROUND_TEXTURES: Record<string, string> = {
-  item: '/assets/back/trainer-supporter.png',
-  supporter: '/assets/back/trainer-supporter.png',
-  stadium: '/assets/back/trainer-supporter.png',
-  tool: '/assets/back/trainer-supporter.png',
-  ace_spec: '/assets/back/trainer-supporter.png',
-  trainer: '/assets/back/trainer-supporter.png',
+  item: 'assets/back/trainer-supporter.png',
+  supporter: 'assets/back/trainer-supporter.png',
+  stadium: 'assets/back/trainer-supporter.png',
+  tool: 'assets/back/trainer-supporter.png',
+  ace_spec: 'assets/back/trainer-supporter.png',
+  trainer: 'assets/back/trainer-supporter.png',
 };
 
 // Frame borders from assets/frame/
 export const FRAME_TEXTURES: Record<string, string> = {
-  normal: '/assets/frame/ノーマル.png',
-  rare: '/assets/frame/レア.png',
-  pearl: '/assets/frame/パール.png',
-  gold: '/assets/frame/金.png',
-  red: '/assets/frame/赤.png',
-  blue: '/assets/frame/青.png',
-  green: '/assets/frame/緑.png',
-  yellow: '/assets/frame/黄色.png',
-  purple: '/assets/frame/紫.png',
+  normal: 'assets/frame/ノーマル.png',
+  rare: 'assets/frame/レア.png',
+  pearl: 'assets/frame/パール.png',
+  gold: 'assets/frame/金.png',
+  red: 'assets/frame/赤.png',
+  blue: 'assets/frame/青.png',
+  green: 'assets/frame/緑.png',
+  yellow: 'assets/frame/黄色.png',
+  purple: 'assets/frame/紫.png',
 };
 
 export interface FrameOption {

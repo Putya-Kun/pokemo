@@ -27,9 +27,9 @@ export const POKEMON_CARD_LAYOUT_CONFIG = {
 
 // Stage image layer mapping (full-card scale overlay for existing assets)
 const STAGE_OVERLAY_IMAGES: Record<string, string> = {
-  'たね': '/assets/level/seed.png',
-  '1進化': '/assets/level/stage1-grey.png',
-  '2進化': '/assets/level/stage2-grey.png',
+  'たね': 'assets/level/seed.png',
+  '1進化': 'assets/level/stage1-grey.png',
+  '2進化': 'assets/level/stage2-grey.png',
 };
 
 interface PokemonCardProps {
@@ -132,7 +132,7 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
       {/* Ability Badge Overlay Layer (exact card size overlay from assets/other/349d5092_1.png when Ability is ON) */}
       {card.ability?.enabled && (
         <img
-          src="/assets/other/349d5092_1.png"
+          src="assets/other/349d5092_1.png"
           alt="Ability Badge Overlay"
           className="absolute inset-0 w-full h-full object-fill pointer-events-none z-30 select-none"
           loading="eager"
