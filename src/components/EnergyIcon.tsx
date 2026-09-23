@@ -18,7 +18,7 @@ export const EnergyIcon: React.FC<EnergyIconProps> = React.memo(({
   size = 'md',
   customSize,
   className = '',
-  showShadow = true,
+  showShadow = false,
   withWhiteBorder = false,
   whiteBorderWidth = 2.5,
   style,
@@ -37,7 +37,7 @@ export const EnergyIcon: React.FC<EnergyIconProps> = React.memo(({
 
   return (
     <div
-      className={`inline-flex items-center justify-center rounded-full shrink-0 relative overflow-hidden select-none transition-transform ${customSize ? '' : sizeMap[size]} ${className}`}
+      className={`inline-flex items-center justify-center rounded-full shrink-0 relative overflow-hidden select-none ${customSize ? '' : sizeMap[size]} ${className}`}
       style={{
         ...(customSize ? {
           width: `${customSize}px`,
@@ -48,7 +48,7 @@ export const EnergyIcon: React.FC<EnergyIconProps> = React.memo(({
         border: withWhiteBorder ? `${whiteBorderWidth}px solid #ffffff` : 'none',
         boxSizing: 'border-box',
         boxShadow: showShadow
-          ? '0 1.5px 3.5px rgba(0,0,0,0.4)'
+          ? '0 0 1.5px rgba(0,0,0,0.35)'
           : undefined,
         ...style,
       }}

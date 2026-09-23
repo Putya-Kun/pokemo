@@ -295,6 +295,79 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
         }
         return true;
       },
+      onCloneNode: (cloned: Node) => {
+        if (cloned instanceof HTMLElement) {
+          // 1. Inject dedicated SVG styles to enforce white outline / text-stroke
+          const styleTag = document.createElement('style');
+          styleTag.textContent = `
+            .card-text-stroke, [data-text-stroke="true"] {
+              -webkit-text-stroke: 0.95px #ffffff !important;
+              -webkit-text-stroke-width: 0.95px !important;
+              -webkit-text-stroke-color: #ffffff !important;
+              paint-order: stroke fill !important;
+              text-shadow: 1px 1px 0 #ffffff, -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 0 0 1.5px #ffffff !important;
+            }
+            .card-text-stroke-thick, [data-text-stroke="thick"] {
+              -webkit-text-stroke: 1.3px #ffffff !important;
+              -webkit-text-stroke-width: 1.3px !important;
+              -webkit-text-stroke-color: #ffffff !important;
+              paint-order: stroke fill !important;
+              text-shadow: 1px 1px 0 #ffffff, -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 0 0 2px #ffffff !important;
+            }
+            /* Eliminate any shifted shadow shapes on iOS Safari */
+            [title], .rounded-full, img[src*="energy"], img[src*="assets/types"] {
+              box-shadow: none !important;
+              filter: none !important;
+            }
+          `;
+          cloned.appendChild(styleTag);
+
+          // 2. Re-apply inline text-stroke directly onto cloned elements because getComputedStyle in Safari omits WebKit prefixed properties
+          const strokeEls = cloned.querySelectorAll('.card-text-stroke, .card-text-stroke-thick, [data-text-stroke]');
+          strokeEls.forEach((el) => {
+            if (el instanceof HTMLElement) {
+              const isThick = el.classList.contains('card-text-stroke-thick') || el.getAttribute('data-text-stroke') === 'thick';
+              const width = isThick ? '1.3px' : '0.95px';
+              el.style.setProperty('-webkit-text-stroke', `${width} #ffffff`, 'important');
+              el.style.setProperty('-webkit-text-stroke-width', width, 'important');
+              el.style.setProperty('-webkit-text-stroke-color', '#ffffff', 'important');
+              el.style.setProperty('paint-order', 'stroke fill', 'important');
+              el.style.setProperty('text-shadow', '1px 1px 0 #ffffff, -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 0 0 1.5px #ffffff', 'important');
+            }
+          });
+
+          // 3. Remove all box-shadows and filters on energy icons and circular badges
+          const energyIcons = cloned.querySelectorAll('.rounded-full, [title], img[src*="energy"], img[src*="assets/types"]');
+          energyIcons.forEach((el) => {
+            if (el instanceof HTMLElement) {
+              el.style.boxShadow = 'none';
+              el.style.filter = 'none';
+              if (el.parentElement instanceof HTMLElement) {
+                el.parentElement.style.boxShadow = 'none';
+                el.parentElement.style.filter = 'none';
+              }
+            }
+          });
+        }
+      },
+      onCreateForeignObjectSvg: (svg: SVGSVGElement) => {
+        const style = document.createElement('style');
+        style.textContent = `
+          .card-text-stroke, [data-text-stroke="true"] {
+            -webkit-text-stroke: 0.95px #ffffff !important;
+            paint-order: stroke fill !important;
+          }
+          .card-text-stroke-thick, [data-text-stroke="thick"] {
+            -webkit-text-stroke: 1.3px #ffffff !important;
+            paint-order: stroke fill !important;
+          }
+          .rounded-full, [title], img[src*="energy"], img[src*="assets/types"] {
+            box-shadow: none !important;
+            filter: none !important;
+          }
+        `;
+        svg.insertBefore(style, svg.firstChild);
+      },
     };
 
     // Capture the on-screen preview card directly using modern-screenshot (with fallback to toPng)

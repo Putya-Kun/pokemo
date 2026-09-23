@@ -89,6 +89,16 @@
     font-feature-settings: "tnum";
     letter-spacing: -0.02em;
   }
+  .card-text-stroke {
+    -webkit-text-stroke: 0.9px #ffffff;
+    paint-order: stroke fill;
+    text-shadow: 1px 1px 0 #ffffff, -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 0 0 1.5px #ffffff;
+  }
+  .card-text-stroke-thick {
+    -webkit-text-stroke: 1.2px #ffffff;
+    paint-order: stroke fill;
+    text-shadow: 1px 1px 0 #ffffff, -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 0 0 2px #ffffff;
+  }
 }
 
 /* Card 3D tilt & sheen */

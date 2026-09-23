@@ -69,10 +69,10 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
   const textOutlineStyle: React.CSSProperties = isDarkType
     ? {}
     : {
-        WebkitTextStroke: '0.8px #ffffff',
+        WebkitTextStroke: '0.9px #ffffff',
         paintOrder: 'stroke fill',
         textShadow:
-          '1px 1px 0 #ffffff, -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 0 0 2px #ffffff',
+          '1px 1px 0 #ffffff, -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 0 0 1.5px #ffffff',
       };
 
   return (
@@ -220,8 +220,9 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
             {/* Sub-character Name (Positioned on the LEFT of main name, condensed) */}
             {card.suffix && (
               <span
+                data-text-stroke={!isDarkType ? 'true' : undefined}
                 className={`font-matter font-black leading-none shrink-0 inline-block ${
-                  isDarkType ? 'text-white' : 'text-slate-950'
+                  isDarkType ? 'text-white' : 'text-slate-950 card-text-stroke'
                 }`}
                 style={{
                   fontSize: `${POKEMON_CARD_LAYOUT_CONFIG.SUB_NAME_FONT_SIZE}px`,
@@ -239,8 +240,9 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
 
             {/* Main Character Name */}
             <h1 
+              data-text-stroke={!isDarkType ? 'thick' : undefined}
               className={`font-matter font-black text-[28px] leading-none shrink-0 inline-block pr-2 ${
-                isDarkType ? 'text-white drop-shadow-xs' : 'text-slate-950'
+                isDarkType ? 'text-white drop-shadow-xs' : 'text-slate-950 card-text-stroke-thick'
               }`}
               style={{ 
                 fontWeight: 900,
@@ -263,12 +265,19 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
             right: '12.4%',  // 右端からの距離
           }}
         >
-          <span className={`text-[10.5px] font-black mr-0.5 tracking-tighter ${
-            isDarkType ? 'text-slate-200' : 'text-slate-800'
-          }`} style={textOutlineStyle}>HP</span>
           <span 
+            data-text-stroke={!isDarkType ? 'true' : undefined}
+            className={`text-[10.5px] font-black mr-0.5 tracking-tighter ${
+              isDarkType ? 'text-slate-200' : 'text-slate-800 card-text-stroke'
+            }`} 
+            style={textOutlineStyle}
+          >
+            HP
+          </span>
+          <span 
+            data-text-stroke={!isDarkType ? 'thick' : undefined}
             className={`font-hp text-[27px] tracking-tight font-black inline-block leading-none origin-bottom ${
-              isDarkType ? 'text-white' : 'text-slate-950'
+              isDarkType ? 'text-white' : 'text-slate-950 card-text-stroke-thick'
             }`} 
             style={{
               transform: 'scale(0.92, 1.12)',
@@ -350,8 +359,9 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
                 }}
               >
                 <span 
+                  data-text-stroke={!isDarkType ? 'thick' : undefined}
                   className={`font-zen font-black text-[19px] leading-snug tracking-tight ${
-                    isDarkType ? 'text-red-400' : 'text-red-600'
+                    isDarkType ? 'text-red-400' : 'text-red-600 card-text-stroke-thick'
                   }`}
                   style={textOutlineStyle}
                 >
@@ -360,8 +370,9 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
               </div>
               {/* Ability Description */}
               <p 
+                data-text-stroke={!isDarkType ? 'true' : undefined}
                 className={`text-[10.5px] leading-[1.35] font-normal text-left px-0.5 transition-all ${
-                  isDarkType ? 'text-slate-100' : 'text-slate-900'
+                  isDarkType ? 'text-slate-100' : 'text-slate-900 card-text-stroke'
                 }`}
                 style={{
                   transform: `translateY(${POKEMON_CARD_LAYOUT_CONFIG.ABILITY_DESC_OFFSET_Y}px)`,
@@ -409,7 +420,7 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
                         }`}>なし</span>
                       ) : (
                         move.energyCost.map((eType, eIdx) => (
-                          <EnergyIcon key={eIdx} type={eType} size="sm" withWhiteBorder={true} />
+                          <EnergyIcon key={eIdx} type={eType} size="sm" withWhiteBorder={true} showShadow={false} />
                         ))
                       )}
                     </div>
@@ -422,8 +433,9 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
                       }}
                     >
                       <span 
+                        data-text-stroke={!isDarkType ? 'thick' : undefined}
                         className={`font-hp font-black text-lg leading-normal pointer-events-auto whitespace-nowrap overflow-visible pt-1 pb-0.5 inline-block ${
-                          isDarkType ? 'text-white' : 'text-slate-950'
+                          isDarkType ? 'text-white' : 'text-slate-950 card-text-stroke-thick'
                         }`}
                         style={{
                           transform: `scale(${card.moveNameSize ?? POKEMON_CARD_LAYOUT_CONFIG.MOVE_NAME_SCALE})`,
@@ -446,8 +458,9 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
                     <div className="shrink-0 z-10 ml-auto pl-2">
                       {move.damage ? (
                         <span 
+                          data-text-stroke={!isDarkType ? 'thick' : undefined}
                           className={`font-damage font-bold text-2xl tracking-tight leading-none ${
-                            isDarkType ? 'text-white' : 'text-slate-950'
+                            isDarkType ? 'text-white' : 'text-slate-950 card-text-stroke-thick'
                           }`}
                           style={textOutlineStyle}
                         >
@@ -460,8 +473,9 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
                   {/* Move Description (New Line starting from below energy icons) */}
                   {move.description && (
                     <p 
+                      data-text-stroke={!isDarkType ? 'true' : undefined}
                       className={`text-[10.5px] leading-[1.35] mt-1 px-0.5 font-normal text-left relative ${
-                        isDarkType ? 'text-slate-100' : 'text-slate-900'
+                        isDarkType ? 'text-slate-100' : 'text-slate-900 card-text-stroke'
                       }`}
                       style={{
                         left: `${POKEMON_CARD_LAYOUT_CONFIG.MOVE_DESC_OFFSET_X}px`,
@@ -501,8 +515,9 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
           >
             {/* 役割ラベル（弱点） */}
             <span 
+              data-text-stroke={!isDarkType ? 'true' : undefined}
               className={`inline-flex justify-between font-medium leading-none ${
-                isDarkType ? 'text-slate-100' : 'text-slate-900'
+                isDarkType ? 'text-slate-100' : 'text-slate-900 card-text-stroke'
               }`}
               style={{
                 width: '24px',      // 文字幅（均等割り付け幅）
@@ -518,10 +533,11 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
             {/* 弱点の値（タイプアイコン & 倍率） */}
             {card.weaknessType !== 'none' && (
               <div className="flex items-center gap-0.5 ml-1">
-                <EnergyIcon type={card.weaknessType} size="xs" />
+                <EnergyIcon type={card.weaknessType} size="xs" showShadow={false} />
                 <span 
+                  data-text-stroke={!isDarkType ? 'thick' : undefined}
                   className={`font-hp font-black ml-0.5 leading-none ${
-                    isDarkType ? 'text-white' : 'text-slate-950'
+                    isDarkType ? 'text-white' : 'text-slate-950 card-text-stroke-thick'
                   }`}
                   style={{
                     fontSize: '15px',   // 【値の文字サイズ】
@@ -546,8 +562,9 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
           >
             {/* 役割ラベル（抵抗力） */}
             <span 
+              data-text-stroke={!isDarkType ? 'true' : undefined}
               className={`inline-flex justify-between font-medium leading-none ${
-                isDarkType ? 'text-slate-100' : 'text-slate-900'
+                isDarkType ? 'text-slate-100' : 'text-slate-900 card-text-stroke'
               }`}
               style={{
                 width: '32px',      // 文字幅（均等割り付け幅）
@@ -564,10 +581,11 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
             {/* 抵抗力の値（タイプアイコン & 軽減値） */}
             {card.resistanceType !== 'none' && (
               <div className="flex items-center gap-0.5 ml-1">
-                <EnergyIcon type={card.resistanceType} size="xs" />
+                <EnergyIcon type={card.resistanceType} size="xs" showShadow={false} />
                 <span 
+                  data-text-stroke={!isDarkType ? 'thick' : undefined}
                   className={`font-hp font-black ml-0.5 leading-none ${
-                    isDarkType ? 'text-white' : 'text-slate-950'
+                    isDarkType ? 'text-white' : 'text-slate-950 card-text-stroke-thick'
                   }`}
                   style={{
                     fontSize: '15px',   // 【値の文字サイズ】
@@ -592,8 +610,9 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
           >
             {/* 役割ラベル（にげる） */}
             <span 
+              data-text-stroke={!isDarkType ? 'true' : undefined}
               className={`inline-flex justify-between font-medium leading-none ${
-                isDarkType ? 'text-slate-100' : 'text-slate-900'
+                isDarkType ? 'text-slate-100' : 'text-slate-900 card-text-stroke'
               }`}
               style={{
                 width: '32px',      // 文字幅（均等割り付け幅）
@@ -611,7 +630,7 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
             <div className="flex items-center gap-1 ml-0.5">
               {card.retreatCost > 0 && (
                 Array.from({ length: Math.min(card.retreatCost, 4) }).map((_, i) => (
-                  <EnergyIcon key={i} type="colorless" size="xs" />
+                  <EnergyIcon key={i} type="colorless" size="xs" showShadow={false} />
                 ))
               )}
             </div>
@@ -633,8 +652,9 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
             {/* Left: Illustrator & Set info */}
             <div className="flex flex-col gap-0.5">
               <span 
+                data-text-stroke={!isDarkType ? 'true' : undefined}
                 className={`font-bold italic text-[8.5px] leading-tight ${
-                  isDarkType ? 'text-slate-200' : 'text-slate-800'
+                  isDarkType ? 'text-slate-200' : 'text-slate-800 card-text-stroke'
                 }`}
                 style={textOutlineStyle}
               >
@@ -643,30 +663,32 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
               <div className="flex items-center gap-1 text-[8px]">
                 {/* 左：レギュレーションマーク（白地＋黒枠の細長い縦長角丸四角形） */}
                 <span
-                  className="inline-flex items-center justify-center w-[10.8px] h-[15px] bg-white text-black text-[8.5px] font-black rounded-[2px] border border-black leading-none select-none shadow-[0_0.5px_1px_rgba(0,0,0,0.15)] shrink-0"
+                  className="inline-flex items-center justify-center w-[10.8px] h-[15px] bg-white text-black text-[8.5px] font-black rounded-[2px] border border-black leading-none select-none shrink-0"
                 >
                   {card.regulationMark || 'G'}
                 </span>
 
                 {/* 右：セットシンボル（黒地＋白縁取り＋黒外枠の角丸四角形） */}
                 <span
-                  className="inline-flex items-center justify-center px-1.5 py-[0.5px] h-[15px] bg-black text-white text-[8px] font-black rounded-[3px] border border-white shadow-[0_0_0_1px_rgba(0,0,0,0.9)] leading-none tracking-tight select-none not-italic"
+                  className="inline-flex items-center justify-center px-1.5 py-[0.5px] h-[15px] bg-black text-white text-[8px] font-black rounded-[3px] border border-white leading-none tracking-tight select-none not-italic"
                 >
                   {card.setSymbol || 'sv1S'}
                 </span>
 
                 {/* カード番号（斜体・イタリック体） */}
                 <span 
+                  data-text-stroke={!isDarkType ? 'true' : undefined}
                   className={`font-black italic text-[9px] tracking-tight ml-1 ${
-                    isDarkType ? 'text-white' : 'text-slate-950'
+                    isDarkType ? 'text-white' : 'text-slate-950 card-text-stroke'
                   }`}
                   style={textOutlineStyle}
                 >
                   {card.cardNumber || '059/078'}
                 </span>
                 <span 
+                  data-text-stroke={!isDarkType ? 'true' : undefined}
                   className={`font-black italic text-[8.5px] ml-0.5 ${
-                    isDarkType ? 'text-white' : 'text-slate-950'
+                    isDarkType ? 'text-white' : 'text-slate-950 card-text-stroke'
                   }`}
                   style={textOutlineStyle}
                 >
@@ -678,8 +700,9 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
             {/* Right: Flavor Text */}
             {card.flavorText && (
               <div 
+                data-text-stroke={!isDarkType ? 'true' : undefined}
                 className={`text-[8px] leading-[1.3] text-right max-w-[220px] line-clamp-2 ${
-                  isDarkType ? 'text-slate-200' : 'text-slate-800'
+                  isDarkType ? 'text-slate-200' : 'text-slate-800 card-text-stroke'
                 }`}
                 style={textOutlineStyle}
               >
@@ -690,8 +713,9 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
 
           {/* Bottom Center Copyright */}
           <div 
+            data-text-stroke={!isDarkType ? 'true' : undefined}
             className={`text-center text-[7px] mt-0.5 tracking-tight font-medium ${
-              isDarkType ? 'text-slate-400' : 'text-slate-600'
+              isDarkType ? 'text-slate-400' : 'text-slate-600 card-text-stroke'
             }`}
             style={{
               transform: `translateY(${POKEMON_CARD_LAYOUT_CONFIG.COPYRIGHT_OFFSET_Y}px)`,
