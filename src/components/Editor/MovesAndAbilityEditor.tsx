@@ -80,7 +80,7 @@ export const MovesAndAbilityEditor: React.FC<MovesAndAbilityEditorProps> = ({
         <div>
           <div className="flex items-center justify-between mb-1">
             <label className="text-xs font-bold text-slate-300">
-              ルール説明テキスト
+              ルール説明テキスト (改行可)
             </label>
             <button
               type="button"
@@ -93,12 +93,12 @@ export const MovesAndAbilityEditor: React.FC<MovesAndAbilityEditorProps> = ({
               カテゴリの標準ルールを適用
             </button>
           </div>
-          <input
-            type="text"
+          <textarea
+            rows={3}
             value={trainerCard.ruleText}
             onChange={(e) => onUpdate({ ruleText: e.target.value })}
             placeholder="サポートは、自分の番に1枚しか使えない。"
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-400"
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-400 leading-relaxed font-mplus whitespace-pre-line"
           />
         </div>
 
@@ -108,25 +108,11 @@ export const MovesAndAbilityEditor: React.FC<MovesAndAbilityEditorProps> = ({
             カードの効果テキスト (改行可)
           </label>
           <textarea
-            rows={5}
+            rows={6}
             value={trainerCard.effectText}
             onChange={(e) => onUpdate({ effectText: e.target.value })}
             placeholder="自分の山札から好きなカードを3枚まで選び、手札に加える。そして山札を切る。"
             className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-400 leading-relaxed font-mplus"
-          />
-        </div>
-
-        {/* Sub Effect / Description */}
-        <div>
-          <label className="text-xs font-bold text-slate-300 block mb-1">
-            補足・フレーバー説明 (任意)
-          </label>
-          <input
-            type="text"
-            value={trainerCard.subEffectText || ''}
-            onChange={(e) => onUpdate({ subEffectText: e.target.value })}
-            placeholder="例: （最初の自分の番には使えない。）"
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-400"
           />
         </div>
       </div>
@@ -165,44 +151,21 @@ export const MovesAndAbilityEditor: React.FC<MovesAndAbilityEditorProps> = ({
 
         {pokemonCard.ability.enabled && (
           <div className="space-y-2 pt-1 border-t border-slate-700/50">
-            <div className="grid grid-cols-3 gap-2">
-              <div className="col-span-2">
-                <label className="text-[11px] text-slate-400 block mb-0.5">
-                  特性の名前
-                </label>
-                <input
-                  type="text"
-                  value={pokemonCard.ability.name}
-                  onChange={(e) =>
-                    onUpdate({
-                      ability: { ...pokemonCard.ability, name: e.target.value },
-                    })
-                  }
-                  placeholder="例: れんごくしはい, がんばりハート"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-100 focus:outline-none focus:border-red-400"
-                />
-              </div>
-              <div>
-                <label className="text-[11px] text-slate-400 block mb-0.5">
-                  タイプ
-                </label>
-                <select
-                  value={pokemonCard.ability.type}
-                  onChange={(e) =>
-                    onUpdate({
-                      ability: {
-                        ...pokemonCard.ability,
-                        type: e.target.value as any,
-                      },
-                    })
-                  }
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-100 focus:outline-none focus:border-red-400"
-                >
-                  <option value="ability">通常特性</option>
-                  <option value="vstar_power">VSTARパワー</option>
-                  <option value="ancient_trait">古代能力</option>
-                </select>
-              </div>
+            <div>
+              <label className="text-[11px] text-slate-400 block mb-0.5">
+                特性の名前
+              </label>
+              <input
+                type="text"
+                value={pokemonCard.ability.name}
+                onChange={(e) =>
+                  onUpdate({
+                    ability: { ...pokemonCard.ability, name: e.target.value },
+                  })
+                }
+                placeholder="例: れんごくしはい, がんばりハート"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-100 focus:outline-none focus:border-red-400"
+              />
             </div>
 
             <div>
@@ -382,22 +345,6 @@ export const MovesAndAbilityEditor: React.FC<MovesAndAbilityEditorProps> = ({
                 }
                 placeholder="例: 相手がすでにとったサイドの枚数×30ダメージ追加。"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
-              />
-            </div>
-
-            {/* Special Tag */}
-            <div className="pt-1 border-t border-slate-700/60">
-              <label className="text-[10px] text-slate-400 block mb-0.5">
-                特殊タグ (任意)
-              </label>
-              <input
-                type="text"
-                value={move.specialTag || ''}
-                onChange={(e) =>
-                  handleUpdateMove(moveIdx, { specialTag: e.target.value })
-                }
-                placeholder="テラスわざ, GX, 必殺技"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
               />
             </div>
           </div>

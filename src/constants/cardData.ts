@@ -166,7 +166,7 @@ export const TRAINER_CATEGORY_CONFIG: Record<TrainerCategory, {
     color: '#16a34a',
     gradient: 'from-emerald-600 via-green-500 to-teal-600',
     bannerColor: '#15803d',
-    defaultRule: 'スタジアムは、自分の番に1枚だけ、バトル場の横に出せる。別の名前のスタジアムが場に出たなら、このカードをトラッシュする。',
+    defaultRule: 'スタジアムは、自分の番に１枚、バトル場の横に出せる。\n別のスタジアムが場に出たなら、このカードをトラッシュ\nする。同じ名前のスタジアムは場に出せない。',
   },
   tool: {
     name: 'Pokémon Tool',
@@ -174,7 +174,7 @@ export const TRAINER_CATEGORY_CONFIG: Record<TrainerCategory, {
     color: '#9333ea',
     gradient: 'from-purple-600 via-fuchsia-500 to-violet-600',
     bannerColor: '#7e22ce',
-    defaultRule: 'ポケモンのどうぐは、自分のポケモンにつけて使う。ポケモン1匹につき1枚だけつけられ、つけたままにする。',
+    defaultRule: 'ポケモンのどうぐは、自分の番に何枚でも、自分の\nポケモンにつけられる。ポケモン１匹につき１枚だけ\nつけられ、つけたままにする。',
   },
   ace_spec: {
     name: 'ACE SPEC',
@@ -613,19 +613,19 @@ export const PRESET_CARDS: { id: string; name: string; tag: string; data: Pokemo
   {
     id: 'preset_prime_catcher',
     name: 'プライムキャッチャー',
-    tag: 'ACE SPEC (グッズ)',
+    tag: 'グッズ',
     data: {
       kind: 'trainer',
       id: 't_prime',
       name: 'プライムキャッチャー',
-      category: 'ace_spec',
+      category: 'item',
       imageUrl: '',
       imageScale: 1.0,
       imagePositionX: 0,
       imagePositionY: 0,
       imageFit: 'cover',
       isFullArt: true,
-      ruleText: 'ACE SPECのカードは、デッキに1枚しか入れられない。',
+      ruleText: 'グッズは、自分の番に何枚でも使える。',
       effectText: '相手のベンチポケモンを1匹選び、バトルポケモンと入れ替える。その後、自分のバトルポケモンをベンチポケモンと入れ替える。',
       illustrator: 'Studio Bora Inc.',
       cardNumber: '062/071',
@@ -633,7 +633,6 @@ export const PRESET_CARDS: { id: string; name: string; tag: string; data: Pokemo
       regulationMark: 'H',
       rarity: 'UR',
       foilEffect: 'gold',
-      customCardTag: 'ACE SPEC',
     },
   },
 ];

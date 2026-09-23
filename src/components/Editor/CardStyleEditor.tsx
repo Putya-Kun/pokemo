@@ -1,7 +1,7 @@
 import React from 'react';
 import { CardData } from '../../types';
 import { FRAME_OPTIONS } from '../../constants/energyImages';
-import { Frame, Tag, Check, Sparkles } from 'lucide-react';
+import { Frame, Check } from 'lucide-react';
 
 interface CardStyleEditorProps {
   card: CardData;
@@ -101,48 +101,6 @@ export const CardStyleEditor: React.FC<CardStyleEditorProps> = ({
               </button>
             );
           })}
-        </div>
-      </div>
-
-      {/* SPECIAL CARD TAG BADGE */}
-      <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/60 space-y-3">
-        <label className="text-xs font-bold text-slate-200 block flex items-center gap-1.5">
-          <Tag className="w-3.5 h-3.5 text-amber-400" />
-          カード右上の特別ラベル (カスタムタグ)
-        </label>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={card.customCardTag || ''}
-            onChange={(e) => onUpdate({ customCardTag: e.target.value })}
-            placeholder="例: テラスタル, 古代, 未来, ACE SPEC, PROMO"
-            className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
-          />
-          {card.customCardTag && (
-            <button
-              type="button"
-              onClick={() => onUpdate({ customCardTag: '' })}
-              className="px-2.5 py-1 text-xs bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600"
-            >
-              削除
-            </button>
-          )}
-        </div>
-
-        {/* Quick Tag Suggestions */}
-        <div className="flex flex-wrap gap-1.5 pt-1">
-          {['テラスタル', '古代', '未来', 'かがやく', 'ACE SPEC', 'フルアート', 'PROMO'].map(
-            (tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => onUpdate({ customCardTag: tag })}
-                className="px-2 py-0.5 rounded-full bg-slate-700/80 hover:bg-amber-500/20 hover:text-amber-300 text-[10px] font-semibold text-slate-300 transition-colors"
-              >
-                +{tag}
-              </button>
-            )
-          )}
         </div>
       </div>
     </div>

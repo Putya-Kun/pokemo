@@ -31,12 +31,19 @@ export const TYPE_BACKGROUND_TEXTURES: Partial<Record<PokemonType, string>> = {
 
 // Trainer card background textures from assets/back/
 export const TRAINER_BACKGROUND_TEXTURES: Record<string, string> = {
-  item: 'assets/back/trainer-supporter.png',
+  item: 'assets/back/trainer-item.png',
   supporter: 'assets/back/trainer-supporter.png',
-  stadium: 'assets/back/trainer-supporter.png',
-  tool: 'assets/back/trainer-supporter.png',
-  ace_spec: 'assets/back/trainer-supporter.png',
+  stadium: 'assets/back/trainer-stadium.png',
+  tool: 'assets/back/trainer-pokedougu.png',
   trainer: 'assets/back/trainer-supporter.png',
+};
+
+// Trainer card category badge icons from assets/other/
+export const TRAINER_CATEGORY_ICONS: Record<string, string> = {
+  supporter: 'assets/other/support.png',
+  item: 'assets/other/goods.png',
+  stadium: 'assets/other/studium.png',
+  tool: 'assets/other/pokedougu.png',
 };
 
 // Frame borders from assets/frame/
@@ -142,3 +149,37 @@ export const getFrameUrl = (frameId?: string): string => {
   }
   return '';
 };
+
+// -------------------------------------------------------------------------
+// 【キャラクター名右横のアイコン (ex / GX / V / VMAX / VSTAR / LV.X など)】
+// assets/exicon/ 配下のアイコン一覧
+// -------------------------------------------------------------------------
+export interface ExIconOption {
+  id: string;
+  name: string;
+  url: string;
+}
+
+export const EX_ICON_OPTIONS: ExIconOption[] = [
+  { id: 'sv-ex', name: 'ex (SV)', url: 'assets/exicon/icon-ex-sv.webp' },
+  { id: 'tera-ex', name: 'ex (テラスタル)', url: 'assets/exicon/icon-ex-tera.webp' },
+  { id: 'black-yellow-ex', name: 'ex (黒/黄)', url: 'assets/exicon/icon-ex-black-yellow.webp' },
+  { id: 'blue-ex', name: 'ex (青)', url: 'assets/exicon/icon-ex-blue.webp' },
+  { id: 'green-ex', name: 'ex (緑)', url: 'assets/exicon/icon-ex-green.webp' },
+  { id: 'pearl-ex', name: 'ex (パール)', url: 'assets/exicon/icon-ex-pearl.webp' },
+  { id: 'red-ex', name: 'ex (赤)', url: 'assets/exicon/icon-ex-red.webp' },
+  { id: 'yellow-ex', name: 'ex (黄)', url: 'assets/exicon/icon-ex-yellow.webp' },
+  { id: 'mega-ex', name: 'M進化 (MEGA)', url: 'assets/exicon/icon-ex-mega.webp' },
+  { id: 'tcg-ex', name: 'EX (TCG)', url: 'assets/exicon/icon-tcg-ex.webp' },
+  { id: 'tcg-ex-white', name: 'EX (白)', url: 'assets/exicon/icon-tcg-ex-white.webp' },
+  { id: 'ss-ex', name: 'EX (SS)', url: 'assets/exicon/icon-ss-ex.webp' },
+  { id: 'gx', name: 'GX', url: 'assets/exicon/icon-gx.webp' },
+  { id: 'gx-tag-team', name: 'GX TAG TEAM', url: 'assets/exicon/icon-gx-tag-team.webp' },
+  { id: 'gx-ultra-beast', name: 'GX UB', url: 'assets/exicon/icon-gx-ultra-beast.webp' },
+  { id: 'gx-ultra-beast-tag-team', name: 'GX UB TAG TEAM', url: 'assets/exicon/icon-gx-ultra-beast-tag-team.webp' },
+  { id: 'v', name: 'V', url: 'assets/exicon/icon-v.webp' },
+  { id: 'vmax', name: 'VMAX', url: 'assets/exicon/icon-vmax.webp' },
+  { id: 'vstar', name: 'VSTAR', url: 'assets/exicon/icon-vstar.webp' },
+  { id: 'lvx', name: 'LV.X', url: 'assets/exicon/icon-lvx.webp' },
+];
+

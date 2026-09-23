@@ -59,6 +59,7 @@ export interface PokemonCardData {
   secondaryType?: PokemonType;
   stage: PokemonStage;
   evolvesFrom?: string; // e.g. "ピカチュウから進化"
+  nameIcon?: string; // e.g. "assets/exicon/icon-ex-sv.webp"
   dexSpecies: string; // e.g. "ねずみポケモン"
   dexHeight: string; // e.g. "0.4m"
   dexWeight: string; // e.g. "6.0kg"
