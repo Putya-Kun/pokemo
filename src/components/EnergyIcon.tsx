@@ -39,7 +39,9 @@ export const EnergyIcon: React.FC<EnergyIconProps> = ({
           ? withWhiteBorder
             ? '0 0 0 1.5px #ffffff, 0 1.5px 3.5px rgba(0,0,0,0.4)'
             : '0 2px 4px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.6)'
-          : undefined,
+          : withWhiteBorder
+            ? '0 0 0 1.5px #ffffff'
+            : undefined,
       }}
       title={type}
     >

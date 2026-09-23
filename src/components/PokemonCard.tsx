@@ -47,12 +47,9 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
   const isEx = card.suffix.toLowerCase() === 'ex';
   const isDarkType = card.primaryType === 'darkness';
 
-  // 【全体の文字用：薄い白縁取り（闇タイプの場合は薄い黒縁取り）】
+  // 【全体の文字用：薄い白縁取り（悪タイプの場合は縁取りなし）】
   const textOutlineStyle: React.CSSProperties = isDarkType
-    ? {
-        textShadow:
-          '-1px -1px 0 rgba(0,0,0,0.85), 1px -1px 0 rgba(0,0,0,0.85), -1px 1px 0 rgba(0,0,0,0.85), 1px 1px 0 rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.9)',
-      }
+    ? {}
     : {
         textShadow:
           '-1px -1px 0 rgba(255,255,255,0.95), 1px -1px 0 rgba(255,255,255,0.95), -1px 1px 0 rgba(255,255,255,0.95), 1px 1px 0 rgba(255,255,255,0.95), 0 0 2px rgba(255,255,255,0.95)',
@@ -212,41 +209,48 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
         <div
           className="absolute flex items-baseline leading-none z-20 pointer-events-none"
           style={{
-            top: '3.6%',     // 上下の位置（数値を増やすと下、減らすと上へ）
-            right: '12.6%',  // 右端からの距離（もっと右にする場合は 12.0% や 11.5% に小さくしてください）
+            top: 'calc(3.6% + 5px)',  // 上下の位置（+5px 下）
+            right: '12.4%',  // 右端からの距離
           }}
         >
-          <span className={`text-[11px] font-black mr-0.5 tracking-tighter ${
+          <span className={`text-[10.5px] font-black mr-0.5 tracking-tighter ${
             isDarkType ? 'text-slate-200' : 'text-slate-800'
           }`} style={textOutlineStyle}>HP</span>
-          <span className={`font-hp text-2xl tracking-tight font-black ${
-            isDarkType ? 'text-white' : 'text-slate-950'
-          }`} style={textOutlineStyle}>
+          <span 
+            className={`font-hp text-[27px] tracking-tight font-black inline-block leading-none origin-bottom ${
+              isDarkType ? 'text-white' : 'text-slate-950'
+            }`} 
+            style={{
+              transform: 'scale(0.92, 1.12)',
+              ...textOutlineStyle,
+            }}
+          >
             {card.hp || '60'}
           </span>
         </div>
 
         {/* 【右上エネルギーアイコン（完全独立・絶対配置エリア）】 */}
-        {/* HPと切り離して絶対配置しているため、top / right / width / height を自由に変更してもHPの位置は一切変わりません */}
         <div
           className="absolute flex items-center justify-center pointer-events-none z-20"
           style={{
-            top: '4.0%',     // 上下の位置（% または px）
-            right: '5.16%',   // 右端からの位置（もっと右にする場合は 5.0% や 4.5% にしてください）
-            width: '26px',   // アイコンの横幅
-            height: '26px',  // アイコンの高さ
+            top: '3.8%',     // 上下の位置
+            right: '5.0%',   // 右端からの位置
+            width: '27px',   // アイコンの横幅
+            height: '27px',  // アイコンの高さ
           }}
         >
           <EnergyIcon
             type={card.primaryType}
-            className="w-[28px] h-[28px]"
+            className="w-[27px] h-[27px]"
             showShadow={false}
+            withWhiteBorder={true}
           />
           {secondaryMeta && (
             <EnergyIcon
               type={secondaryMeta.id}
-              className="w-[26px] h-[26px] -ml-2.5"
+              className="w-[25px] h-[25px] -ml-2"
               showShadow={false}
+              withWhiteBorder={true}
             />
           )}
         </div>
