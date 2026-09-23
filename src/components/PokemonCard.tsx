@@ -1,0 +1,644 @@
+import React from 'react';
+import { PokemonCardData } from '../types';
+import { TYPE_CONFIG } from '../constants/cardData';
+import { TYPE_BACKGROUND_TEXTURES, getFrameUrl } from '../constants/energyImages';
+import { EnergyIcon } from './EnergyIcon';
+
+// =========================================================================
+// 【カード描画カスタム調整定数 (コードから調整可能)】
+// コードからフォントサイズや位置を自由に調整できます
+// =========================================================================
+export const POKEMON_CARD_LAYOUT_CONFIG = {
+  TITLE_OFFSET_X: 0,        // タイトル（名前）開始位置の左右オフセット (px)
+  MOVE_NAME_OFFSET_X: 50,    // ワザ名の左右位置オフセット (px, プラスで右移動、マイナスで左移動)
+  MOVE_NAME_SCALE: 1.0,     // ワザ名のフォントサイズ倍率 (1.0 = 100%)
+  ENERGY_ICON_SCALE: 1.15,  // ワザのエネルギーアイコン拡大倍率 (1.15 = 115%)
+  MOVE_1_OFFSET_Y: -32,     // ワザが1つの時の上下位置オフセット (px, マイナスで上寄り)
+  MOVE_2_OFFSET_Y: -28,     // ワザが2つの時の上下位置オフセット (px)
+  MOVE_ABILITY_ON_OFFSET_Y: 0, // 特性がONの時のワザの上下位置オフセット (px)
+
+  // -------------------------------------------------------------------------
+  // 【特性（Ability）の位置・上下調整コード設定】
+  // -------------------------------------------------------------------------
+  ABILITY_TITLE_OFFSET_Y: -2,  // 特性タイトルの上下位置 (px, マイナスで上移動)
+  ABILITY_TITLE_OFFSET_X: 108, // 特性タイトルの左右位置 (px, 左端からの距離)
+  ABILITY_DESC_OFFSET_Y: 2,    // 特性詳細（効果説明文）の上下位置 (px, マイナスで上移動)
+};
+
+// Stage image layer mapping (full-card scale overlay for existing assets)
+const STAGE_OVERLAY_IMAGES: Record<string, string> = {
+  'たね': '/assets/level/seed.png',
+  '1進化': '/assets/level/stage1-grey.png',
+  '2進化': '/assets/level/stage2-grey.png',
+};
+
+interface PokemonCardProps {
+  card: PokemonCardData;
+  tiltAngle?: { x: number; y: number };
+  isInteractive?: boolean;
+}
+
+export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
+  const typeMeta = TYPE_CONFIG[card.primaryType] || TYPE_CONFIG.colorless;
+  const secondaryMeta = card.secondaryType ? TYPE_CONFIG[card.secondaryType] : null;
+  const frameUrl = getFrameUrl(card.selectedFrame);
+
+  const isTera = Boolean(card.customCardTag?.includes('テラスタル'));
+  const isEx = card.suffix.toLowerCase() === 'ex';
+  const isDarkType = card.primaryType === 'darkness';
+
+  // 【全体の文字用：薄い白縁取り（闇タイプの場合は薄い黒縁取り）】
+  const textOutlineStyle: React.CSSProperties = isDarkType
+    ? {
+        textShadow:
+          '-1px -1px 0 rgba(0,0,0,0.85), 1px -1px 0 rgba(0,0,0,0.85), -1px 1px 0 rgba(0,0,0,0.85), 1px 1px 0 rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.9)',
+      }
+    : {
+        textShadow:
+          '-1px -1px 0 rgba(255,255,255,0.95), 1px -1px 0 rgba(255,255,255,0.95), -1px 1px 0 rgba(255,255,255,0.95), 1px 1px 0 rgba(255,255,255,0.95), 0 0 2px rgba(255,255,255,0.95)',
+      };
+
+  return (
+    <div
+      id="pokemon-card-canvas"
+      className="relative w-[420px] h-[586px] rounded-[22px] shadow-2xl overflow-hidden select-none font-mplus text-slate-900 transition-transform duration-200 shrink-0"
+      style={{
+        background: isTera
+          ? 'linear-gradient(145deg, #e0f2fe 0%, #bae6fd 25%, #fed7aa 50%, #fbcfe8 75%, #c7d2fe 100%)'
+          : card.foilEffect === 'gold'
+          ? 'linear-gradient(135deg, #fef08a 0%, #ca8a04 40%, #eab308 70%, #fef9c3 100%)'
+          : `linear-gradient(160deg, ${typeMeta.accentColor} 0%, #cbd5e1 35%, #94a3b8 70%, ${typeMeta.primaryColor} 100%)`,
+        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.6)',
+      }}
+    >
+      {/* Background Texture from assets/back/ (Full Card Base) */}
+      {TYPE_BACKGROUND_TEXTURES[card.primaryType] && (
+        <img
+          src={TYPE_BACKGROUND_TEXTURES[card.primaryType]}
+          alt="Card Background"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-0 select-none"
+          loading="eager"
+          decoding="sync"
+        />
+      )}
+
+      {/* ARTWORK CONTAINER (Absolute positioned at z-10 so frame and stage overlays sit ON TOP of artwork) */}
+      <div 
+        className="absolute overflow-hidden bg-transparent group z-10"
+        style={{
+          top: '10.0%',
+          left: '8.65%',
+          width: '83.65%',
+          height: '37.5%',
+        }}
+      >
+        {/* Card Image */}
+        {card.imageUrl ? (
+          <img
+            src={card.imageUrl}
+            alt={card.name}
+            className="w-full h-full object-cover transition-transform"
+            referrerPolicy="no-referrer"
+            style={{
+              transform: `scale(${card.imageScale}) translate(${card.imagePositionX}%, ${card.imagePositionY}%)`,
+              objectFit: card.imageFit,
+            }}
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-800/80 text-slate-300 text-xs">
+            <span>画像が設定されていません</span>
+          </div>
+        )}
+
+        {/* Special Card Sub-Badge / Tera Overlay */}
+        {card.customCardTag && (
+          <div className="absolute top-1.5 right-1.5 bg-slate-900/90 text-amber-300 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-400/60 shadow backdrop-blur-xs">
+            {card.customCardTag}
+          </div>
+        )}
+      </div>
+
+      {/* Frame Texture Layer from assets/frame/ (exact card size overlay) */}
+      {frameUrl && (
+        <img
+          src={frameUrl}
+          alt="Card Frame Overlay"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-30 select-none"
+          loading="eager"
+          decoding="sync"
+        />
+      )}
+
+      {/* Ability Badge Overlay Layer (exact card size overlay from assets/other/349d5092_1.png when Ability is ON) */}
+      {card.ability?.enabled && (
+        <img
+          src="/assets/other/349d5092_1.png"
+          alt="Ability Badge Overlay"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-30 select-none"
+          loading="eager"
+          decoding="sync"
+        />
+      )}
+
+      {/* Stage Badge Overlay Layer (exact card size overlay at z-35 so it sits on top of artwork & frame) */}
+      {STAGE_OVERLAY_IMAGES[card.stage] && (
+        <img
+          src={STAGE_OVERLAY_IMAGES[card.stage]}
+          alt={`${card.stage} Overlay`}
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-35 select-none"
+          loading="eager"
+          decoding="sync"
+        />
+      )}
+
+      {/* Main Card Content Container with absolute coordinate alignment (z-40 so texts sit on top of frame overlays) */}
+      <div className="absolute inset-0 w-full h-full pointer-events-auto z-40 select-none">
+
+        {/* TOP HEADER (Stage & Name) */}
+        <div 
+          className="absolute flex items-center justify-start px-1"
+          style={{ top: '2.5%', left: '5.8%', right: '28.0%', height: '7.5%' }}
+        >
+          {/* Stage badge (たね / 1進化 / 2進化) */}
+          <div className={`flex items-center gap-1 shrink-0 ${STAGE_OVERLAY_IMAGES[card.stage] ? 'invisible' : ''}`}>
+            <div
+              className="px-2.5 py-0.5 rounded-[4px] text-[11px] font-black text-white shadow-xs flex items-center gap-1 tracking-wider"
+              style={{
+                backgroundColor: isTera ? '#0284c7' : typeMeta.badgeBg,
+              }}
+            >
+              <span>{card.stage}</span>
+            </div>
+          </div>
+
+          {/* Name & Suffix Badge */}
+          <div 
+            className="flex-1 px-2 flex items-center justify-start gap-1 overflow-visible transition-transform"
+            style={{
+              transform: `translateX(${card.titleOffsetX ?? POKEMON_CARD_LAYOUT_CONFIG.TITLE_OFFSET_X}px)`,
+            }}
+          >
+            <h1 
+              className={`font-matter font-black text-[29px] leading-none shrink-0 inline-block pr-2 ${
+                isDarkType ? 'text-white drop-shadow-xs' : 'text-slate-950'
+              }`}
+              style={{ 
+                fontWeight: 900,
+                letterSpacing: '-0.22em', // 文字間隔（小さく詰める）
+                paddingRight: '0.24em',   // 最後の文字の右端が切れるのを防止
+                marginLeft: '8px',         // ほんの少し右へ移動（3px〜6px等で微調整可能）
+                ...textOutlineStyle,
+              }}
+            >
+              {card.name}
+            </h1>
+            {card.suffix && (
+              <span
+                className={`font-dela text-[13px] italic px-1.5 py-0.2 rounded leading-none shrink-0 ${
+                  isEx
+                    ? 'bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-600 text-white shadow-[0_1px_2px_rgba(0,0,0,0.4)]'
+                    : 'bg-slate-800 text-amber-300'
+                }`}
+                style={textOutlineStyle}
+              >
+                {card.suffix}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* 【HP表示エリア（完全独立・絶対配置エリア）】 */}
+        {/* HPの位置を調整する際はここの top / right を変更してください */}
+        <div
+          className="absolute flex items-baseline leading-none z-20 pointer-events-none"
+          style={{
+            top: '3.6%',     // 上下の位置（数値を増やすと下、減らすと上へ）
+            right: '12.6%',  // 右端からの距離（もっと右にする場合は 12.0% や 11.5% に小さくしてください）
+          }}
+        >
+          <span className={`text-[11px] font-black mr-0.5 tracking-tighter ${
+            isDarkType ? 'text-slate-200' : 'text-slate-800'
+          }`} style={textOutlineStyle}>HP</span>
+          <span className={`font-hp text-2xl tracking-tight font-black ${
+            isDarkType ? 'text-white' : 'text-slate-950'
+          }`} style={textOutlineStyle}>
+            {card.hp || '60'}
+          </span>
+        </div>
+
+        {/* 【右上エネルギーアイコン（完全独立・絶対配置エリア）】 */}
+        {/* HPと切り離して絶対配置しているため、top / right / width / height を自由に変更してもHPの位置は一切変わりません */}
+        <div
+          className="absolute flex items-center justify-center pointer-events-none z-20"
+          style={{
+            top: '4.0%',     // 上下の位置（% または px）
+            right: '5.16%',   // 右端からの位置（もっと右にする場合は 5.0% や 4.5% にしてください）
+            width: '26px',   // アイコンの横幅
+            height: '26px',  // アイコンの高さ
+          }}
+        >
+          <EnergyIcon
+            type={card.primaryType}
+            className="w-[28px] h-[28px]"
+            showShadow={false}
+          />
+          {secondaryMeta && (
+            <EnergyIcon
+              type={secondaryMeta.id}
+              className="w-[26px] h-[26px] -ml-2.5"
+              showShadow={false}
+            />
+          )}
+        </div>
+
+
+
+        {/* POKEDEX SUB-BAR (Absolute positioned right on top of the silver ribbon) */}
+        <div 
+          className="absolute flex items-center justify-center text-[8.5px] text-slate-800 font-semibold tracking-tight bg-transparent text-center leading-none"
+          style={{
+            top: '47.5%',
+            left: '6.44%',
+            width: '87.12%',
+            height: '2.8%',
+          }}
+        >
+          <span>
+            {card.dexNumber ? `全国図鑑${card.dexNumber} ` : ''}
+            {card.dexSpecies ? `${card.dexSpecies} ` : ''}
+            {card.dexHeight ? `高さ：${card.dexHeight} ` : ''}
+            {card.dexWeight ? `重さ：${card.dexWeight}` : ''}
+          </span>
+        </div>
+
+        {/* ABILITY & MOVES CONTENT AREA */}
+        <div 
+          className={`absolute flex flex-col px-1.5 overflow-visible transition-all ${
+            card.ability?.enabled ? 'justify-start pt-0.5 gap-2' : 'justify-center gap-1'
+          }`}
+          style={{
+            top: '55.2%',
+            left: '6.0%',
+            width: '88.0%',
+            bottom: '12.2%',
+          }}
+        >
+          {/* ABILITY (特性) - Title & Description matching reference layout */}
+          {card.ability?.enabled && (
+            <div className="py-0.5 px-1 flex flex-col mb-0.5 overflow-visible">
+              {/* Ability Name (Positioned right beside the image overlay badge) */}
+              <div 
+                className="flex items-center min-h-[24px] py-0.5 overflow-visible transition-all"
+                style={{
+                  paddingLeft: `${POKEMON_CARD_LAYOUT_CONFIG.ABILITY_TITLE_OFFSET_X}px`,
+                  transform: `translateY(${POKEMON_CARD_LAYOUT_CONFIG.ABILITY_TITLE_OFFSET_Y}px)`,
+                }}
+              >
+                <span 
+                  className={`font-zen font-black text-[19px] leading-snug tracking-tight ${
+                    isDarkType ? 'text-red-400' : 'text-red-600'
+                  }`}
+                  style={textOutlineStyle}
+                >
+                  {card.ability.name || '特性名'}
+                </span>
+              </div>
+              {/* Ability Description */}
+              <p 
+                className={`text-[10.5px] leading-[1.35] font-normal text-left px-0.5 transition-all ${
+                  isDarkType ? 'text-slate-100' : 'text-slate-900'
+                }`}
+                style={{
+                  transform: `translateY(${POKEMON_CARD_LAYOUT_CONFIG.ABILITY_DESC_OFFSET_Y}px)`,
+                  ...textOutlineStyle,
+                }}
+              >
+                {card.ability.description || '特性の効果テキストが入ります。'}
+              </p>
+            </div>
+          )}
+
+          {/* MOVES (ワザ) - Dynamic positioning when Ability is ON vs OFF */}
+          <div
+            className="flex flex-col gap-1.5 transition-all"
+            style={{
+              transform: card.ability?.enabled
+                ? `translateY(${POKEMON_CARD_LAYOUT_CONFIG.MOVE_ABILITY_ON_OFFSET_Y}px)`
+                : `translateY(${
+                    (card.moves?.length === 1
+                      ? (card.move1OffsetY ?? POKEMON_CARD_LAYOUT_CONFIG.MOVE_1_OFFSET_Y)
+                      : (card.move2OffsetY ?? POKEMON_CARD_LAYOUT_CONFIG.MOVE_2_OFFSET_Y))
+                  }px)`,
+            }}
+          >
+            {card.moves && card.moves.map((move, idx) => {
+              return (
+                <div
+                  key={move.id || idx}
+                  className="py-1 px-1 relative transition-all flex flex-col"
+                >
+                  {/* Header Row: Energy (Left) + Move Name (Center) + Damage (Right) */}
+                  <div className="relative flex items-center justify-between min-h-[30px] w-full">
+                    {/* Energy Cost (Far Left) */}
+                    <div 
+                      className="flex items-center gap-1 shrink-0 z-10 min-w-[36px]"
+                      style={{
+                        transform: `scale(${card.energyIconScale ?? POKEMON_CARD_LAYOUT_CONFIG.ENERGY_ICON_SCALE})`,
+                        transformOrigin: 'left center',
+                      }}
+                    >
+                      {move.energyCost.length === 0 ? (
+                        <span className={`text-[10px] font-medium ${
+                          isDarkType ? 'text-slate-400' : 'text-slate-500'
+                        }`}>なし</span>
+                      ) : (
+                        move.energyCost.map((eType, eIdx) => (
+                          <EnergyIcon key={eIdx} type={eType} size="sm" withWhiteBorder={true} />
+                        ))
+                      )}
+                    </div>
+
+                    {/* Move Name (Aligned to match Top Title starting X coordinate) */}
+                    <div 
+                      className="absolute flex items-center justify-start gap-1 max-w-[58%] text-left z-10 pointer-events-none"
+                      style={{
+                        left: `calc(60px + ${(card.titleOffsetX ?? POKEMON_CARD_LAYOUT_CONFIG.TITLE_OFFSET_X) + POKEMON_CARD_LAYOUT_CONFIG.MOVE_NAME_OFFSET_X}px)`,
+                      }}
+                    >
+                      <span 
+                        className={`font-hp font-black text-lg leading-none pointer-events-auto truncate ${
+                          isDarkType ? 'text-white' : 'text-slate-950'
+                        }`}
+                        style={{
+                          transform: `scale(${card.moveNameSize ?? POKEMON_CARD_LAYOUT_CONFIG.MOVE_NAME_SCALE})`,
+                          transformOrigin: 'left center',
+                          ...textOutlineStyle,
+                        }}
+                      >
+                        {move.name || 'ワザ名'}
+                      </span>
+                      {/* Special Move Tag (e.g. GX, 特大わざ) */}
+                      {move.specialTag && (
+                        <span className="text-[8px] bg-slate-900 text-amber-300 font-bold px-1 rounded shrink-0 pointer-events-auto">
+                          {move.specialTag}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Damage (Far Right) */}
+                    <div className="shrink-0 z-10 ml-auto pl-2">
+                      {move.damage ? (
+                        <span 
+                          className={`font-damage font-bold text-2xl tracking-tight leading-none ${
+                            isDarkType ? 'text-white' : 'text-slate-950'
+                          }`}
+                          style={textOutlineStyle}
+                        >
+                          {move.damage}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  {/* Move Description (New Line starting from below energy icons) */}
+                  {move.description && (
+                    <p 
+                      className={`text-[10.5px] leading-[1.35] mt-1 px-0.5 font-normal text-left ${
+                        isDarkType ? 'text-slate-100' : 'text-slate-900'
+                      }`}
+                      style={textOutlineStyle}
+                    >
+                      {move.description}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ============================================================ */}
+        {/* 【BOTTOM STATS AREA: 弱点 / 抵抗力 / にげる 調整エリア】 */}
+        {/* ============================================================ */}
+        <div 
+          className="absolute bg-transparent select-none pointer-events-none"
+          style={{
+            bottom: '10.68%', // 全体の上下位置（数値を増やすと上へ、減らすと下へ）
+            left: '6.44%',
+            width: '87.12%',
+            height: '3.6%',
+          }}
+        >
+          {/* 1. 弱点 (Weakness) */}
+          <div 
+            className="absolute flex items-center gap-1 shrink-0"
+            style={{
+              left: '3%',         // 弱点の横位置
+              top: '50%',
+              transform: 'translateY(-50%)',
+            }}
+          >
+            {/* 役割ラベル（弱点） */}
+            <span 
+              className={`inline-flex justify-between font-medium leading-none ${
+                isDarkType ? 'text-slate-100' : 'text-slate-900'
+              }`}
+              style={{
+                width: '24px',      // 文字幅（均等割り付け幅）
+                fontSize: '8px',    // 役割ラベルの文字サイズ
+                fontWeight: 500,    // ラベルの太さ
+                ...textOutlineStyle,
+              }}
+            >
+              <span>弱</span>
+              <span>点</span>
+            </span>
+
+            {/* 弱点の値（タイプアイコン & 倍率） */}
+            {card.weaknessType !== 'none' && (
+              <div className="flex items-center gap-0.5 ml-1">
+                <EnergyIcon type={card.weaknessType} size="xs" />
+                <span 
+                  className={`font-hp font-black ml-0.5 leading-none ${
+                    isDarkType ? 'text-white' : 'text-slate-950'
+                  }`}
+                  style={{
+                    fontSize: '15px',   // 【値の文字サイズ】
+                    fontWeight: 900,    // 【値の太さ】
+                    ...textOutlineStyle,
+                  }}
+                >
+                  {(card.weaknessValue || '× 2').replace(/^([×xX\*])\s*/, '$1 ')}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* 2. 抵抗力 (Resistance) */}
+          <div 
+            className="absolute flex items-center gap-1 shrink-0"
+            style={{
+              left: '30.5%',       // 抵抗力の横位置（自由に変更可能）
+              top: '50%',
+              transform: 'translateY(-50%)',
+            }}
+          >
+            {/* 役割ラベル（抵抗力） */}
+            <span 
+              className={`inline-flex justify-between font-medium leading-none ${
+                isDarkType ? 'text-slate-100' : 'text-slate-900'
+              }`}
+              style={{
+                width: '32px',      // 文字幅（均等割り付け幅）
+                fontSize: '8px',    // 役割ラベルの文字サイズ
+                fontWeight: 500,    // ラベルの太さ
+                ...textOutlineStyle,
+              }}
+            >
+              <span>抵</span>
+              <span>抗</span>
+              <span>力</span>
+            </span>
+
+            {/* 抵抗力の値（タイプアイコン & 軽減値） */}
+            {card.resistanceType !== 'none' && (
+              <div className="flex items-center gap-0.5 ml-1">
+                <EnergyIcon type={card.resistanceType} size="xs" />
+                <span 
+                  className={`font-hp font-black ml-0.5 leading-none ${
+                    isDarkType ? 'text-white' : 'text-slate-950'
+                  }`}
+                  style={{
+                    fontSize: '15px',   // 【値の文字サイズ】
+                    fontWeight: 900,    // 【値の太さ】
+                    ...textOutlineStyle,
+                  }}
+                >
+                  {(card.resistanceValue || '- 30').replace(/^([-−–])\s*/, '$1 ')}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* 3. にげる (Retreat) */}
+          <div 
+            className="absolute flex items-center gap-1.5 shrink-0"
+            style={{
+              left: '65.0%',       // にげるの横位置（自由に変更可能）
+              top: '50%',
+              transform: 'translateY(-50%)',
+            }}
+          >
+            {/* 役割ラベル（にげる） */}
+            <span 
+              className={`inline-flex justify-between font-medium leading-none ${
+                isDarkType ? 'text-slate-100' : 'text-slate-900'
+              }`}
+              style={{
+                width: '32px',      // 文字幅（均等割り付け幅）
+                fontSize: '8px',    // 役割ラベルの文字サイズ
+                fontWeight: 500,    // ラベルの太さ
+                ...textOutlineStyle,
+              }}
+            >
+              <span>に</span>
+              <span>げ</span>
+              <span>る</span>
+            </span>
+
+            {/* にげるエネルギーアイコン */}
+            <div className="flex items-center gap-1 ml-0.5">
+              {card.retreatCost > 0 && (
+                Array.from({ length: Math.min(card.retreatCost, 4) }).map((_, i) => (
+                  <EnergyIcon key={i} type="colorless" size="xs" />
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* FOOTER METADATA & FLAVOR TEXT */}
+        <div 
+          className="absolute flex flex-col justify-end"
+          style={{
+            bottom: '1.2%',
+            left: '6.0%',
+            width: '88.0%',
+            height: '5.6%',
+          }}
+        >
+          <div className="flex items-end justify-between gap-2">
+            {/* Left: Illustrator & Set info */}
+            <div className="flex flex-col gap-0.5">
+              <span 
+                className={`font-bold italic text-[8.5px] leading-tight ${
+                  isDarkType ? 'text-slate-200' : 'text-slate-800'
+                }`}
+                style={textOutlineStyle}
+              >
+                Illus.{card.illustrator || 'オリジナル'}
+              </span>
+              <div className="flex items-center gap-1 text-[8px]">
+                {/* 左：レギュレーションマーク（白地＋黒枠の細長い縦長角丸四角形） */}
+                <span
+                  className="inline-flex items-center justify-center w-[10.8px] h-[15px] bg-white text-black text-[8.5px] font-black rounded-[2px] border border-black leading-none select-none shadow-[0_0.5px_1px_rgba(0,0,0,0.15)] shrink-0"
+                >
+                  {card.regulationMark || 'G'}
+                </span>
+
+                {/* 右：セットシンボル（黒地＋白縁取り＋黒外枠の角丸四角形） */}
+                <span
+                  className="inline-flex items-center justify-center px-1.5 py-[0.5px] h-[15px] bg-black text-white text-[8px] font-black rounded-[3px] border border-white shadow-[0_0_0_1px_rgba(0,0,0,0.9)] leading-none tracking-tight select-none not-italic"
+                >
+                  {card.setSymbol || 'sv1S'}
+                </span>
+
+                {/* カード番号（斜体・イタリック体） */}
+                <span 
+                  className={`font-black italic text-[9px] tracking-tight ml-1 ${
+                    isDarkType ? 'text-white' : 'text-slate-950'
+                  }`}
+                  style={textOutlineStyle}
+                >
+                  {card.cardNumber || '059/078'}
+                </span>
+                <span 
+                  className={`font-black italic text-[8.5px] ml-0.5 ${
+                    isDarkType ? 'text-white' : 'text-slate-950'
+                  }`}
+                  style={textOutlineStyle}
+                >
+                  {card.rarity || 'C'}
+                </span>
+              </div>
+            </div>
+
+            {/* Right: Flavor Text */}
+            {card.flavorText && (
+              <div 
+                className={`text-[8px] leading-[1.3] text-right max-w-[220px] line-clamp-2 ${
+                  isDarkType ? 'text-slate-200' : 'text-slate-800'
+                }`}
+                style={textOutlineStyle}
+              >
+                {card.flavorText}
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Center Copyright */}
+          <div 
+            className={`text-center text-[7px] mt-0.5 tracking-tight font-medium ${
+              isDarkType ? 'text-slate-400' : 'text-slate-600'
+            }`}
+            style={textOutlineStyle}
+          >
+            ©2026 Pokémon/Nintendo/Creatures/GAME FREAK.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+

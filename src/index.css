@@ -1,0 +1,204 @@
+@import "tailwindcss";
+
+/* Custom Webfont for Pokémon Card HP & Numbers */
+@font-face {
+  font-family: 'Toxigenesis';
+  src: url('/fonts/ToxigenesisRg-Bold.otf') format('opentype'),
+       url('/fonts/ToxigenesisRg-Bold.ttf') format('truetype'),
+       url('/fonts/Toxigenesis.otf') format('opentype'),
+       url('/fonts/Toxigenesis-Bold.otf') format('opentype'),
+       url('/fonts/Toxigenesis-Bold.ttf') format('truetype'),
+       local('Toxigenesis Bold'),
+       local('ToxigenesisRg-Bold'),
+       local('Toxigenesis-Bold'),
+       local('Toxigenesis');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Toxigenesis';
+  src: url('/fonts/ToxigenesisRg-Regular.otf') format('opentype'),
+       url('/fonts/ToxigenesisRg-Regular.ttf') format('truetype'),
+       url('/fonts/Toxigenesis.ttf') format('truetype'),
+       local('Toxigenesis Regular'),
+       local('Toxigenesis');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Custom Webfont for Pokémon Card Character / Card Name */
+@font-face {
+  font-family: 'Matter-Medium';
+  src: url('/fonts/Matter-Medium.otf') format('opentype'),
+       url('/fonts/Matter-Medium.ttf') format('truetype'),
+       url('/fonts/Matter-Bold.otf') format('opentype'),
+       url('/fonts/Matter-Bold.ttf') format('truetype'),
+       url('/fonts/Matter.otf') format('opentype'),
+       url('/fonts/Matter.ttf') format('truetype'),
+       local('Matter Medium'),
+       local('Matter-Medium'),
+       local('Matter');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Matter';
+  src: url('/fonts/Matter-Bold.otf') format('opentype'),
+       url('/fonts/Matter-Bold.ttf') format('truetype'),
+       url('/fonts/Matter-SemiBold.otf') format('opentype'),
+       url('/fonts/Matter-SemiBold.ttf') format('truetype'),
+       url('/fonts/Matter.otf') format('opentype'),
+       url('/fonts/Matter.ttf') format('truetype'),
+       local('Matter Bold'),
+       local('Matter-Bold'),
+       local('Matter');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer utilities {
+  .font-dela {
+    font-family: 'Dela Gothic One', sans-serif;
+  }
+  .font-mplus {
+    font-family: 'M PLUS 1p', sans-serif;
+  }
+  .font-zen {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+  }
+  .font-matter {
+    font-family: 'Matter', 'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+  }
+  .font-toxigenesis {
+    font-family: 'Toxigenesis', 'Dela Gothic One', sans-serif;
+  }
+  .font-hp {
+    font-family: 'Toxigenesis', 'Futura', 'Trebuchet MS', 'Arial Black', sans-serif;
+    font-feature-settings: "tnum";
+    letter-spacing: -0.04em;
+  }
+  .font-damage {
+    font-family: 'Matter-Medium', 'Matter', 'Toxigenesis', sans-serif;
+    font-feature-settings: "tnum";
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Card 3D tilt & sheen */
+.card-perspective {
+  perspective: 1000px;
+}
+
+.holo-sheen {
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 0, 128, 0.25) 38%,
+    rgba(0, 255, 255, 0.3) 50%,
+    rgba(255, 255, 0, 0.25) 62%,
+    rgba(255, 255, 255, 0.05) 75%,
+    transparent 100%
+  );
+  background-size: 250% 250%;
+  animation: holoShift 6s ease infinite;
+  mix-blend-mode: color-dodge;
+  pointer-events: none;
+}
+
+.rainbow-sheen {
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 99, 132, 0.35) 25%,
+    rgba(54, 162, 235, 0.35) 50%,
+    rgba(255, 206, 86, 0.35) 75%,
+    rgba(75, 192, 192, 0.35) 100%
+  );
+  background-size: 200% 200%;
+  animation: rainbowSpin 8s linear infinite;
+  mix-blend-mode: color-dodge;
+  pointer-events: none;
+}
+
+.sparkle-sheen {
+  background-image: 
+    radial-gradient(1.5px 1.5px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(1.5px 1.5px at 40px 70px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 50px 160px, #fde047, rgba(0,0,0,0)),
+    radial-gradient(1.5px 1.5px at 90px 40px, #38bdf8, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 130px 80px, #f472b6, rgba(0,0,0,0)),
+    radial-gradient(1.5px 1.5px at 160px 120px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(2.5px 2.5px at 200px 50px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(1.5px 1.5px at 240px 180px, #fde047, rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 180px 180px;
+  animation: sparkleFloat 10s ease-in-out infinite;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.tera-crystal-sheen {
+  background: 
+    repeating-linear-gradient(45deg, rgba(255,255,255,0.06) 0, rgba(255,255,255,0.06) 8px, transparent 8px, transparent 16px),
+    repeating-linear-gradient(-45deg, rgba(56,189,248,0.12) 0, rgba(56,189,248,0.12) 12px, transparent 12px, transparent 24px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.gold-sheen {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 215, 0, 0.15) 0%,
+    rgba(255, 255, 255, 0.4) 30%,
+    rgba(218, 165, 32, 0.2) 50%,
+    rgba(255, 223, 0, 0.35) 70%,
+    rgba(184, 134, 11, 0.15) 100%
+  );
+  background-size: 200% 200%;
+  animation: goldShimmer 5s ease infinite;
+  mix-blend-mode: hard-light;
+  pointer-events: none;
+}
+
+.dark-sheen {
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(147, 51, 234, 0.15) 0%,
+    rgba(39, 39, 42, 0.3) 60%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+@keyframes holoShift {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+@keyframes rainbowSpin {
+  0% { transform: rotate(0deg) scale(1.1); }
+  50% { transform: rotate(180deg) scale(1.2); }
+  100% { transform: rotate(360deg) scale(1.1); }
+}
+
+@keyframes sparkleFloat {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes goldShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
