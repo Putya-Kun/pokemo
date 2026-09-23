@@ -95,13 +95,13 @@ export const BasicInfoEditor: React.FC<BasicInfoEditorProps> = ({
             </div>
             <div>
               <label className="text-xs font-bold text-slate-300 block mb-1">
-                称号/接尾辞
+                サブキャラクター名
               </label>
               <input
                 type="text"
                 value={pokemonCard.suffix}
                 onChange={(e) => onUpdate({ suffix: e.target.value })}
-                placeholder="ex, V, かがやく"
+                placeholder="例: アローラ, パルデア, かがやく"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400"
               />
             </div>

@@ -100,14 +100,15 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
             @media print {
               body { background: white !important; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
               .no-print { display: none !important; }
-              .print-card-wrapper { box-shadow: none !important; border-radius: 0 !important; }
+              .card-box { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+              .print-card { box-shadow: none !important; margin: 0 !important; }
             }
             body {
               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
               margin: 0;
-              padding: 30px 16px;
-              background: #0f172a;
-              color: #f8fafc;
+              padding: 24px 16px;
+              background: #ffffff;
+              color: #0f172a;
               display: flex;
               flex-direction: column;
               align-items: center;
@@ -116,15 +117,13 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
               box-sizing: border-box;
             }
             .card-box {
-              background: #1e293b;
-              border: 1px solid #334155;
-              padding: 24px;
-              border-radius: 20px;
-              box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+              background: #ffffff;
+              border: none;
+              padding: 16px;
               display: flex;
               flex-direction: column;
               align-items: center;
-              gap: 20px;
+              gap: 16px;
               max-width: 420px;
               width: 100%;
             }
@@ -133,7 +132,7 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
               height: 88mm;
               object-fit: contain;
               border-radius: 3.5mm;
-              box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+              box-shadow: 0 4px 12px rgba(0,0,0,0.12);
               background: white;
             }
             .btn-group {
@@ -154,16 +153,16 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
               gap: 8px;
               transition: all 0.2s;
             }
-            .btn-print { background: #3b82f6; color: white; }
-            .btn-print:hover { background: #2563eb; }
-            .btn-close { background: #475569; color: white; }
-            .btn-close:hover { background: #334155; }
-            .hint { font-size: 12px; color: #94a3b8; text-align: center; margin: 0; }
+            .btn-print { background: #2563eb; color: white; }
+            .btn-print:hover { background: #1d4ed8; }
+            .btn-close { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+            .btn-close:hover { background: #e2e8f0; }
+            .hint { font-size: 12px; color: #64748b; text-align: center; margin: 0; }
           </style>
         </head>
         <body>
           <div class="card-box">
-            <h2 class="no-print" style="margin:0; font-size:18px;">🎴 ポケモンカード 印刷ビュー</h2>
+            <h2 class="no-print" style="margin:0; font-size:18px; font-weight:800;">🎴 ポケモンカード 印刷ビュー</h2>
             <img src="${dataUrl}" class="print-card" alt="カード印刷プレビュー" />
             <div class="btn-group no-print">
               <button class="btn btn-print" onclick="window.print()">🖨️ 今すぐ印刷する</button>
@@ -206,12 +205,13 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
       await document.fonts.ready;
     }
 
-    // Try toPng (html-to-image) first as it produces pristine high-dpi vector crispness
+    // Try toPng (html-to-image) first with skipFonts: true to prevent cross-origin stylesheet errors
     try {
       return await toPng(cardElement, {
         pixelRatio: 3,
         quality: 0.98,
         cacheBust: true,
+        skipFonts: true,
       });
     } catch (toPngErr) {
       console.warn('toPng failed, falling back to html2canvas:', toPngErr);

@@ -33,7 +33,7 @@ export const MovesAndAbilityEditor: React.FC<MovesAndAbilityEditorProps> = ({
 
   // Move management helpers
   const handleAddMove = () => {
-    if (pokemonCard.moves.length >= 3) return;
+    if (pokemonCard.moves.length >= 2) return;
     const newMove: Move = {
       id: `m_${Date.now()}`,
       name: '新しいワザ',
@@ -234,19 +234,22 @@ export const MovesAndAbilityEditor: React.FC<MovesAndAbilityEditorProps> = ({
           <div className="flex items-center gap-1.5">
             <Zap className="w-4 h-4 text-amber-400" />
             <span className="text-xs font-bold text-slate-200">
-              ワザ設定 (最大3つ)
+              ワザ設定 (最大2つ)
             </span>
           </div>
-          {pokemonCard.moves.length < 3 && (
-            <button
-              type="button"
-              onClick={handleAddMove}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>ワザを追加</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handleAddMove}
+            disabled={pokemonCard.moves.length >= 2}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+              pokemonCard.moves.length >= 2
+                ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-40 border border-slate-700/60'
+                : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow cursor-pointer'
+            }`}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>ワザを追加</span>
+          </button>
         </div>
 
         {/* Move Cards List */}

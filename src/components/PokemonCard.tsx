@@ -10,19 +10,25 @@ import { EnergyIcon } from './EnergyIcon';
 // =========================================================================
 export const POKEMON_CARD_LAYOUT_CONFIG = {
   TITLE_OFFSET_X: 0,        // タイトル（名前）開始位置の左右オフセット (px)
-  MOVE_NAME_OFFSET_X: 50,    // ワザ名の左右位置オフセット (px, プラスで右移動、マイナスで左移動)
+  SUB_NAME_MARGIN_RIGHT: -16,  // サブキャラクター名とメイン名の間の間隔 (px, 小さく・マイナスにするとより狭くなります)
+  SUB_NAME_FONT_SIZE: 18,    // サブキャラクター名のフォントサイズ (px)
+  SUB_NAME_SCALE_X: 0.74,    // サブキャラクター名の横幅縮小倍率 (0.76 = 横幅を狭くしてスタイリッシュな細長字に設定)
+  MOVE_NAME_OFFSET_X: 43,    // ワザ名の左右位置オフセット (px, プラスで右移動、マイナスで左移動)
+  MOVE_ENERGY_OFFSET_X: -5,  // ワザのエネルギーアイコンの左右位置オフセット (px, マイナスで左移動、プラスで右移動)
+  MOVE_DESC_OFFSET_X: -4,     // ワザ詳細（効果説明文）の左右位置オフセット (px, プラスで右移動、マイナスで左移動)
+  MOVE_DESC_OFFSET_Y: 0,     // ワザ詳細（効果説明文）の上下位置オフセット (px, マイナスで上移動、プラスで下移動)
   MOVE_NAME_SCALE: 1.0,     // ワザ名のフォントサイズ倍率 (1.0 = 100%)
   ENERGY_ICON_SCALE: 1.15,  // ワザのエネルギーアイコン拡大倍率 (1.15 = 115%)
   MOVE_1_OFFSET_Y: -32,     // ワザが1つの時の上下位置オフセット (px, マイナスで上寄り)
   MOVE_2_OFFSET_Y: -28,     // ワザが2つの時の上下位置オフセット (px)
-  MOVE_ABILITY_ON_OFFSET_Y: 0, // 特性がONの時のワザの上下位置オフセット (px)
+  MOVE_ABILITY_ON_OFFSET_Y: -10, // 特性がONの時のワザ1の上下位置オフセット (px, マイナスで上移動し特性との間隔を詰める)
 
   // -------------------------------------------------------------------------
   // 【特性（Ability）の位置・上下調整コード設定】
   // -------------------------------------------------------------------------
-  ABILITY_TITLE_OFFSET_Y: -2,  // 特性タイトルの上下位置 (px, マイナスで上移動)
-  ABILITY_TITLE_OFFSET_X: 108, // 特性タイトルの左右位置 (px, 左端からの距離)
-  ABILITY_DESC_OFFSET_Y: 2,    // 特性詳細（効果説明文）の上下位置 (px, マイナスで上移動)
+  ABILITY_TITLE_OFFSET_Y: -18.5,  // 特性タイトルの上下位置 (px, マイナスで上移動)
+  ABILITY_TITLE_OFFSET_X: 102, // 特性タイトルの左右位置 (px, 左端からの距離)
+  ABILITY_DESC_OFFSET_Y: -14,    // 特性詳細（効果説明文）の上下位置 (px, マイナスで上移動)
 };
 
 // Stage image layer mapping (full-card scale overlay for existing assets)
@@ -168,39 +174,48 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
             </div>
           </div>
 
-          {/* Name & Suffix Badge */}
+          {/* Name & Sub-character Name */}
           <div 
-            className="flex-1 px-2 flex items-center justify-start gap-1 overflow-visible transition-transform"
+            className="flex-1 px-2 flex items-baseline justify-start gap-1 overflow-visible transition-transform"
             style={{
               transform: `translateX(${card.titleOffsetX ?? POKEMON_CARD_LAYOUT_CONFIG.TITLE_OFFSET_X}px)`,
+              marginLeft: '8px',
             }}
           >
+            {/* Sub-character Name (Positioned on the LEFT of main name, condensed) */}
+            {card.suffix && (
+              <span
+                className={`font-matter font-black leading-none shrink-0 inline-block ${
+                  isDarkType ? 'text-white' : 'text-slate-950'
+                }`}
+                style={{
+                  fontSize: `${POKEMON_CARD_LAYOUT_CONFIG.SUB_NAME_FONT_SIZE}px`,
+                  marginRight: `${POKEMON_CARD_LAYOUT_CONFIG.SUB_NAME_MARGIN_RIGHT}px`,
+                  fontWeight: 900,
+                  letterSpacing: '-0.15em',
+                  transform: `scaleX(${POKEMON_CARD_LAYOUT_CONFIG.SUB_NAME_SCALE_X})`,
+                  transformOrigin: 'left center',
+                  ...textOutlineStyle,
+                }}
+              >
+                {card.suffix}
+              </span>
+            )}
+
+            {/* Main Character Name */}
             <h1 
-              className={`font-matter font-black text-[29px] leading-none shrink-0 inline-block pr-2 ${
+              className={`font-matter font-black text-[28px] leading-none shrink-0 inline-block pr-2 ${
                 isDarkType ? 'text-white drop-shadow-xs' : 'text-slate-950'
               }`}
               style={{ 
                 fontWeight: 900,
                 letterSpacing: '-0.22em', // 文字間隔（小さく詰める）
                 paddingRight: '0.24em',   // 最後の文字の右端が切れるのを防止
-                marginLeft: '8px',         // ほんの少し右へ移動（3px〜6px等で微調整可能）
                 ...textOutlineStyle,
               }}
             >
               {card.name}
             </h1>
-            {card.suffix && (
-              <span
-                className={`font-dela text-[13px] italic px-1.5 py-0.2 rounded leading-none shrink-0 ${
-                  isEx
-                    ? 'bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-600 text-white shadow-[0_1px_2px_rgba(0,0,0,0.4)]'
-                    : 'bg-slate-800 text-amber-300'
-                }`}
-                style={textOutlineStyle}
-              >
-                {card.suffix}
-              </span>
-            )}
           </div>
         </div>
 
@@ -339,14 +354,15 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
               return (
                 <div
                   key={move.id || idx}
-                  className="py-1 px-1 relative transition-all flex flex-col"
+                  className="py-1.5 px-1 relative transition-all flex flex-col"
                 >
                   {/* Header Row: Energy (Left) + Move Name (Center) + Damage (Right) */}
-                  <div className="relative flex items-center justify-between min-h-[30px] w-full">
+                  <div className="relative flex items-center justify-between min-h-[32px] w-full">
                     {/* Energy Cost (Far Left) */}
                     <div 
-                      className="flex items-center gap-1 shrink-0 z-10 min-w-[36px]"
+                      className="flex items-center gap-1 shrink-0 z-10 min-w-[36px] relative"
                       style={{
+                        left: `${POKEMON_CARD_LAYOUT_CONFIG.MOVE_ENERGY_OFFSET_X}px`,
                         transform: `scale(${card.energyIconScale ?? POKEMON_CARD_LAYOUT_CONFIG.ENERGY_ICON_SCALE})`,
                         transformOrigin: 'left center',
                       }}
@@ -364,18 +380,19 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
 
                     {/* Move Name (Aligned to match Top Title starting X coordinate) */}
                     <div 
-                      className="absolute flex items-center justify-start gap-1 max-w-[58%] text-left z-10 pointer-events-none"
+                      className="absolute flex items-center justify-start gap-1 max-w-[58%] text-left z-10 pointer-events-none -top-0.5 overflow-visible"
                       style={{
                         left: `calc(60px + ${(card.titleOffsetX ?? POKEMON_CARD_LAYOUT_CONFIG.TITLE_OFFSET_X) + POKEMON_CARD_LAYOUT_CONFIG.MOVE_NAME_OFFSET_X}px)`,
                       }}
                     >
                       <span 
-                        className={`font-hp font-black text-lg leading-none pointer-events-auto truncate ${
+                        className={`font-hp font-black text-lg leading-normal pointer-events-auto whitespace-nowrap overflow-visible pt-1 pb-0.5 inline-block ${
                           isDarkType ? 'text-white' : 'text-slate-950'
                         }`}
                         style={{
                           transform: `scale(${card.moveNameSize ?? POKEMON_CARD_LAYOUT_CONFIG.MOVE_NAME_SCALE})`,
                           transformOrigin: 'left center',
+                          overflow: 'visible',
                           ...textOutlineStyle,
                         }}
                       >
@@ -407,10 +424,14 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({ card }) => {
                   {/* Move Description (New Line starting from below energy icons) */}
                   {move.description && (
                     <p 
-                      className={`text-[10.5px] leading-[1.35] mt-1 px-0.5 font-normal text-left ${
+                      className={`text-[10.5px] leading-[1.35] mt-1 px-0.5 font-normal text-left relative ${
                         isDarkType ? 'text-slate-100' : 'text-slate-900'
                       }`}
-                      style={textOutlineStyle}
+                      style={{
+                        left: `${POKEMON_CARD_LAYOUT_CONFIG.MOVE_DESC_OFFSET_X}px`,
+                        top: `${POKEMON_CARD_LAYOUT_CONFIG.MOVE_DESC_OFFSET_Y}px`,
+                        ...textOutlineStyle,
+                      }}
                     >
                       {move.description}
                     </p>

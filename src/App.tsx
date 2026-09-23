@@ -12,7 +12,6 @@ import { ImageUploader } from './components/Editor/ImageUploader';
 import { MovesAndAbilityEditor } from './components/Editor/MovesAndAbilityEditor';
 import { StatsAndFooterEditor } from './components/Editor/StatsAndFooterEditor';
 import { CardStyleEditor } from './components/Editor/CardStyleEditor';
-import { PresetSelector } from './components/Editor/PresetSelector';
 import { SavedCardsManager } from './components/Editor/SavedCardsManager';
 import {
   Sparkles,
@@ -25,7 +24,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
-type TabType = 'basic' | 'image' | 'moves' | 'stats' | 'style' | 'presets' | 'saved';
+type TabType = 'basic' | 'image' | 'moves' | 'stats' | 'style' | 'saved';
 
 export default function App() {
   // Initial default card (Pikachu ex)
@@ -87,11 +86,6 @@ export default function App() {
     }
   };
 
-  const handleSelectPreset = (preset: CardData) => {
-    setCurrentCard(preset);
-    showToast(`プリセット「${preset.name}」を読み込みました`);
-  };
-
   const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
     { id: 'basic', label: '基本情報', icon: <Layers className="w-3.5 h-3.5" /> },
     { id: 'image', label: 'イラスト', icon: <ImageIcon className="w-3.5 h-3.5" /> },
@@ -106,7 +100,6 @@ export default function App() {
       icon: <Sliders className="w-3.5 h-3.5" />,
     },
     { id: 'style', label: 'フレーム・装飾', icon: <Palette className="w-3.5 h-3.5" /> },
-    { id: 'presets', label: 'プリセット', icon: <Sparkles className="w-3.5 h-3.5" /> },
     { id: 'saved', label: '保存一覧', icon: <Bookmark className="w-3.5 h-3.5" /> },
   ];
 
@@ -220,10 +213,6 @@ export default function App() {
                 card={currentCard}
                 onUpdate={handleUpdateCard}
               />
-            )}
-
-            {activeTab === 'presets' && (
-              <PresetSelector onSelectPreset={handleSelectPreset} />
             )}
 
             {activeTab === 'saved' && (
