@@ -331,14 +331,15 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
               >
                 {/* 左：レギュレーションマーク（白地＋黒枠の細長い縦長角丸四角形） */}
                 <span
-                  className="inline-flex items-center justify-center w-[10.8px] h-[15px] bg-white text-black text-[8.5px] font-black rounded-[2px] border border-black leading-none select-none shadow-[0_0.5px_1px_rgba(0,0,0,0.15)] shrink-0"
+                  className="inline-flex items-center justify-center w-[10.8px] h-[15px] bg-white text-black text-[8.5px] font-black rounded-[2px] border border-black leading-none select-none shrink-0"
                 >
                   {card.regulationMark || 'G'}
                 </span>
 
                 {/* 右：セットシンボル（黒地＋白縁取り＋黒外枠の角丸四角形） */}
                 <span
-                  className="inline-flex items-center justify-center px-1.5 py-[0.5px] h-[15px] bg-black text-white text-[8px] font-black rounded-[3px] border-none shadow-[0_0_0_1px_#ffffff,0_0_0_2px_rgba(0,0,0,0.9)] leading-none tracking-tight select-none not-italic"
+                  data-set-symbol="true"
+                  className="inline-flex items-center justify-center px-1.5 py-[0.5px] h-[15px] bg-black text-white text-[8px] font-black rounded-[3px] border border-white shadow-[0_0_0_1px_rgba(0,0,0,0.85)] leading-none tracking-tight select-none not-italic"
                 >
                   {card.setSymbol || 'sv1S'}
                 </span>

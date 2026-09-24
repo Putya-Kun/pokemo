@@ -359,6 +359,17 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
               }
             }
           });
+
+          // 4. Export-only fix for set symbol on iOS: replace box-shadow with safe border/outline
+          const setSymbols = cloned.querySelectorAll('[data-set-symbol="true"]');
+          setSymbols.forEach((el) => {
+            if (el instanceof HTMLElement) {
+              el.style.boxShadow = 'none';
+              el.style.border = '1px solid #ffffff';
+              el.style.outline = '1px solid rgba(0,0,0,0.85)';
+              el.style.borderRadius = '3px';
+            }
+          });
         }
       },
       onCreateForeignObjectSvg: (svg: SVGSVGElement) => {
@@ -384,6 +395,12 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
           .rounded-full, [title], img[src*="energy"], img[src*="assets/types"] {
             box-shadow: none !important;
             filter: none !important;
+          }
+          [data-set-symbol="true"] {
+            box-shadow: none !important;
+            border: 1px solid #ffffff !important;
+            outline: 1px solid rgba(0,0,0,0.85) !important;
+            border-radius: 3px !important;
           }
         `;
         svg.insertBefore(style, svg.firstChild);
