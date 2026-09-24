@@ -225,6 +225,17 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
         />
       )}
 
+      {/* 2c. Full Art EX Overlay Layer from assets/back/exback/basic-grey-ex.webp (z-10: On top of Artwork, below text & frame) */}
+      {isFullArtEx && (
+        <img
+          src="assets/back/exback/basic-grey-ex.webp"
+          alt="Full Art EX Base Overlay"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 select-none"
+          loading="eager"
+          decoding="sync"
+        />
+      )}
+
       {/* Frame Texture Layer from assets/frame/ (exact card size overlay) */}
       {frameUrl && (
         <img
