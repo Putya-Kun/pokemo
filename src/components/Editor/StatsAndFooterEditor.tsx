@@ -169,18 +169,28 @@ export const StatsAndFooterEditor: React.FC<StatsAndFooterEditorProps> = ({
           </div>
 
           {/* Flavor text */}
-          <div className="pt-1 border-t border-slate-700/50">
-            <label className="text-[11px] text-slate-400 block mb-0.5 flex items-center gap-1">
-              <BookOpen className="w-3.5 h-3.5" /> 図鑑説明 (フレーバーテキスト)
-            </label>
-            <textarea
-              rows={2}
-              value={pokemonCard.flavorText}
-              onChange={(e) => onUpdate({ flavorText: e.target.value })}
-              placeholder="ポケモン図鑑の説明文を入力してください"
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 focus:outline-none focus:border-amber-400 font-serif"
-            />
-          </div>
+          {(() => {
+            const isEx = pokemonCard.suffix?.toLowerCase() === 'ex' || pokemonCard.cardStyle === 'normal_ex' || pokemonCard.cardStyle === 'fullart_ex';
+            return (
+              <div className={`pt-1 border-t border-slate-700/50 transition-all ${isEx ? 'opacity-40 cursor-not-allowed select-none' : ''}`}>
+                <div className="flex items-center justify-between mb-0.5">
+                  <label className="text-[11px] text-slate-400 flex items-center gap-1">
+                    <BookOpen className="w-3.5 h-3.5" /> 図鑑説明 (フレーバーテキスト)
+                  </label>
+                </div>
+                <textarea
+                  rows={2}
+                  disabled={isEx}
+                  value={pokemonCard.flavorText}
+                  onChange={(e) => onUpdate({ flavorText: e.target.value })}
+                  placeholder="ポケモン図鑑の説明文を入力してください"
+                  className={`w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 focus:outline-none focus:border-amber-400 font-serif ${
+                    isEx ? 'bg-slate-900/40 text-slate-500 cursor-not-allowed pointer-events-none border-slate-800' : ''
+                  }`}
+                />
+              </div>
+            );
+          })()}
         </div>
       )}
 

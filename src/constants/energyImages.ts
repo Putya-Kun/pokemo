@@ -29,6 +29,59 @@ export const TYPE_BACKGROUND_TEXTURES: Partial<Record<PokemonType, string>> = {
   colorless: 'assets/back/basic-normal.png',
 };
 
+// Normal EX background textures from assets/back/exback/
+export interface ExBackgroundTextures {
+  transparent: string;
+  empty: string;
+}
+
+export const TYPE_EX_BACKGROUND_TEXTURES: Partial<Record<PokemonType, ExBackgroundTextures>> = {
+  grass: {
+    transparent: 'assets/back/exback/transparent-grass.webp',
+    empty: 'assets/back/exback/basic-ex-grass-empty.webp',
+  },
+  fire: {
+    transparent: 'assets/back/exback/transparent-fire.webp',
+    empty: 'assets/back/exback/basic-ex-fire-empty.webp',
+  },
+  water: {
+    transparent: 'assets/back/exback/transparent-water.webp',
+    empty: 'assets/back/exback/basic-ex-water-empty.webp',
+  },
+  lightning: {
+    transparent: 'assets/back/exback/transparent-electric.webp',
+    empty: 'assets/back/exback/basic-ex-electric-empty.webp',
+  },
+  psychic: {
+    transparent: 'assets/back/exback/transparent-psychic.webp',
+    empty: 'assets/back/exback/basic-ex-psychic-empty.webp',
+  },
+  fighting: {
+    transparent: 'assets/back/exback/transparent-fighting.webp',
+    empty: 'assets/back/exback/basic-ex-fighting-empty.webp',
+  },
+  darkness: {
+    transparent: 'assets/back/exback/transparent-dark.webp',
+    empty: 'assets/back/exback/basic-ex-dark-empty.webp',
+  },
+  metal: {
+    transparent: 'assets/back/exback/transparent-steel.webp',
+    empty: 'assets/back/exback/basic-ex-steel-empty.webp',
+  },
+  dragon: {
+    transparent: 'assets/back/exback/transparent-dragon.webp',
+    empty: 'assets/back/exback/basic-ex-dragon-empty.webp',
+  },
+  colorless: {
+    transparent: 'assets/back/exback/transparent-normal.webp',
+    empty: 'assets/back/exback/basic-ex-normal-empty.webp',
+  },
+  fairy: {
+    transparent: 'assets/back/exback/transparent-psychic.webp',
+    empty: 'assets/back/exback/basic-ex-psychic-empty.webp',
+  },
+};
+
 // Trainer card background textures from assets/back/
 export const TRAINER_BACKGROUND_TEXTURES: Record<string, string> = {
   item: 'assets/back/trainer-item.png',
@@ -68,13 +121,6 @@ export interface FrameOption {
 }
 
 export const FRAME_OPTIONS: FrameOption[] = [
-  {
-    id: 'none',
-    name: 'なし (標準枠)',
-    url: '',
-    colorPreview: '#475569',
-    description: 'テクスチャフレームなし',
-  },
   {
     id: 'normal',
     name: 'ノーマル',
@@ -141,13 +187,14 @@ export const FRAME_OPTIONS: FrameOption[] = [
 ];
 
 export const getFrameUrl = (frameId?: string): string => {
-  if (!frameId || frameId === 'none') {
+  if (frameId === 'none') {
     return '';
   }
-  if (FRAME_TEXTURES[frameId]) {
-    return encodeURI(FRAME_TEXTURES[frameId]);
+  const targetId = frameId || 'normal';
+  if (FRAME_TEXTURES[targetId]) {
+    return encodeURI(FRAME_TEXTURES[targetId]);
   }
-  return '';
+  return encodeURI(FRAME_TEXTURES.normal || '');
 };
 
 // -------------------------------------------------------------------------

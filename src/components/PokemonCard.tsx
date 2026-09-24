@@ -1,7 +1,7 @@
 import React from 'react';
 import { PokemonCardData } from '../types';
 import { TYPE_CONFIG } from '../constants/cardData';
-import { TYPE_BACKGROUND_TEXTURES, getFrameUrl } from '../constants/energyImages';
+import { TYPE_BACKGROUND_TEXTURES, TYPE_EX_BACKGROUND_TEXTURES, getFrameUrl } from '../constants/energyImages';
 import { EnergyIcon } from './EnergyIcon';
 
 // =========================================================================
@@ -56,6 +56,24 @@ export const POKEMON_CARD_LAYOUT_CONFIG = {
   EVOLVES_FROM_LETTER_SPACING: '-0.05em', // 文字間隔
 
   // -------------------------------------------------------------------------
+  // 【イラスト（画像）表示領域の調整設定 (コードから直接編集可能)】
+  // -------------------------------------------------------------------------
+  ART_EX: {
+    TOP: '9.5%',       // 上からの位置
+    LEFT: '4.6%',      // 左からの位置
+    WIDTH: '92.2%',    // 横幅 (大きくすると左右に広がり、小さくすると狭くなります)
+    HEIGHT: '41.20%',   // 縦幅
+    OBJECT_FIT: 'cover' as const, // 'cover' | 'contain'
+  },
+  ART_NORMAL: {
+    TOP: '10.0%',      // 上からの位置
+    LEFT: '8.65%',     // 左からの位置
+    WIDTH: '84.0%',    // 横幅
+    HEIGHT: '37.5%',   // 縦幅
+    OBJECT_FIT: 'cover' as const,
+  },
+
+  // -------------------------------------------------------------------------
   // 【キャラクター名右横アイコン設定 (ex, GX, V等)】
   // -------------------------------------------------------------------------
   NAME_ICON_HEIGHT: 21,            // アイコンの高さ (px)
@@ -81,8 +99,12 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
   const secondaryMeta = card.secondaryType ? TYPE_CONFIG[card.secondaryType] : null;
   const frameUrl = getFrameUrl(card.selectedFrame);
 
+  const currentCardStyle = card.cardStyle || 'normal';
+  const isNormalEx = currentCardStyle === 'normal_ex';
+  const isFullArtEx = currentCardStyle === 'fullart_ex';
+  const isFullArt = currentCardStyle === 'fullart' || isFullArtEx;
   const isTera = Boolean(card.customCardTag?.includes('テラスタル'));
-  const isEx = card.suffix.toLowerCase() === 'ex';
+  const isEx = card.suffix.toLowerCase() === 'ex' || isNormalEx || isFullArtEx;
 
   // 【全体の文字用：白縁取り（全タイプ共通）】
   const textOutlineStyle: React.CSSProperties = {
@@ -105,40 +127,98 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
         boxShadow: '0 20px 40px -10px rgba(0,0,0,0.6)',
       }}
     >
-      {/* 1. ARTWORK LAYER (Lowest priority z-1: Spans full canvas without tight box clipping, sitting strictly BEHIND background, frames & text) */}
-      <div className="absolute inset-0 w-full h-full z-1 pointer-events-none flex items-center justify-center">
+      {/* 0. Base EX Background Layer from assets/back/exback/ (z-0: Behind Artwork) */}
+      {isNormalEx && TYPE_EX_BACKGROUND_TEXTURES[card.primaryType] && (
+        <img
+          src={TYPE_EX_BACKGROUND_TEXTURES[card.primaryType]?.transparent}
+          alt="EX Background Layer 1 (Transparent)"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-0 select-none"
+          loading="eager"
+          decoding="sync"
+        />
+      )}
+
+      {/* 1. ARTWORK LAYER (z-2: Spans wide up to frame boundaries, strictly behind front borders & UI) */}
+      <div className="absolute inset-0 w-full h-full z-2 pointer-events-none flex items-center justify-center">
         {/* Card Image */}
         {card.imageUrl ? (
-          <img
-            src={card.imageUrl}
-            alt={card.name}
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-            style={{
-              transform: `scale(${card.imageScale}) translate(${card.imagePositionX}%, ${card.imagePositionY}%)`,
-              objectFit: card.imageFit,
-            }}
-          />
+          <div
+            className="absolute overflow-hidden"
+            style={
+              isFullArt
+                ? { inset: 0 }
+                : (isNormalEx || isEx)
+                ? {
+                    top: POKEMON_CARD_LAYOUT_CONFIG.ART_EX.TOP,
+                    left: POKEMON_CARD_LAYOUT_CONFIG.ART_EX.LEFT,
+                    width: POKEMON_CARD_LAYOUT_CONFIG.ART_EX.WIDTH,
+                    height: POKEMON_CARD_LAYOUT_CONFIG.ART_EX.HEIGHT,
+                  }
+                : {
+                    top: POKEMON_CARD_LAYOUT_CONFIG.ART_NORMAL.TOP,
+                    left: POKEMON_CARD_LAYOUT_CONFIG.ART_NORMAL.LEFT,
+                    width: POKEMON_CARD_LAYOUT_CONFIG.ART_NORMAL.WIDTH,
+                    height: POKEMON_CARD_LAYOUT_CONFIG.ART_NORMAL.HEIGHT,
+                  }
+            }
+          >
+            <img
+              src={card.imageUrl}
+              alt={card.name}
+              className="w-full h-full"
+              referrerPolicy="no-referrer"
+              style={{
+                objectFit:
+                  isFullArt
+                    ? 'cover'
+                    : (isNormalEx || isEx)
+                    ? POKEMON_CARD_LAYOUT_CONFIG.ART_EX.OBJECT_FIT
+                    : POKEMON_CARD_LAYOUT_CONFIG.ART_NORMAL.OBJECT_FIT,
+              }}
+            />
+          </div>
         ) : (
           <div 
             className="absolute flex flex-col items-center justify-center bg-slate-800/80 text-slate-300 text-xs rounded-lg border border-dashed border-slate-600 pointer-events-auto"
-            style={{
-              top: '10.0%',
-              left: '8.65%',
-              width: '83.65%',
-              height: '37.5%',
-            }}
+            style={
+              isFullArt
+                ? { inset: 0 }
+                : (isNormalEx || isEx)
+                ? {
+                    top: POKEMON_CARD_LAYOUT_CONFIG.ART_EX.TOP,
+                    left: POKEMON_CARD_LAYOUT_CONFIG.ART_EX.LEFT,
+                    width: POKEMON_CARD_LAYOUT_CONFIG.ART_EX.WIDTH,
+                    height: POKEMON_CARD_LAYOUT_CONFIG.ART_EX.HEIGHT,
+                  }
+                : {
+                    top: POKEMON_CARD_LAYOUT_CONFIG.ART_NORMAL.TOP,
+                    left: POKEMON_CARD_LAYOUT_CONFIG.ART_NORMAL.LEFT,
+                    width: POKEMON_CARD_LAYOUT_CONFIG.ART_NORMAL.WIDTH,
+                    height: POKEMON_CARD_LAYOUT_CONFIG.ART_NORMAL.HEIGHT,
+                  }
+            }
           >
             <span>画像が設定されていません</span>
           </div>
         )}
       </div>
 
-      {/* 2. Background Texture Layer from assets/back/ (z-10) */}
-      {TYPE_BACKGROUND_TEXTURES[card.primaryType] && (
+      {/* 2. Background Texture Layer from assets/back/ (z-10) - Hidden when Full Art or Normal EX */}
+      {!isFullArt && !isNormalEx && TYPE_BACKGROUND_TEXTURES[card.primaryType] && (
         <img
           src={TYPE_BACKGROUND_TEXTURES[card.primaryType]}
           alt="Card Background"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 select-none"
+          loading="eager"
+          decoding="sync"
+        />
+      )}
+
+      {/* 2b. Normal EX Empty Frame Layer from assets/back/exback/ (z-10: On top of Artwork) */}
+      {isNormalEx && TYPE_EX_BACKGROUND_TEXTURES[card.primaryType] && (
+        <img
+          src={TYPE_EX_BACKGROUND_TEXTURES[card.primaryType]?.empty}
+          alt="EX Background Layer 2 (Empty Frame)"
           className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 select-none"
           loading="eager"
           decoding="sync"
@@ -150,6 +230,17 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
         <img
           src={frameUrl}
           alt="Card Frame Overlay"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-30 select-none"
+          loading="eager"
+          decoding="sync"
+        />
+      )}
+
+      {/* Full Art Bottom Overlay Layer (assets/back/exback/grey-bottom-ex.webp for fullart_ex, assets/fullart/grey-bottom.webp for standard fullart) */}
+      {isFullArt && (
+        <img
+          src={isFullArtEx ? 'assets/back/exback/grey-bottom-ex.webp' : 'assets/fullart/grey-bottom.webp'}
+          alt="Full Art Bottom Overlay"
           className="absolute inset-0 w-full h-full object-fill pointer-events-none z-30 select-none"
           loading="eager"
           decoding="sync"
@@ -184,12 +275,16 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
           data-image-drag-handle="true"
           className="absolute z-45 cursor-move touch-none"
           title="ドラッグまたはスワイプで画像位置を調整できます"
-          style={{
-            top: '10.0%',
-            left: '8.65%',
-            width: '83.65%',
-            height: '38.0%',
-          }}
+          style={
+            isFullArt
+              ? { inset: 0 }
+              : {
+                  top: '10.0%',
+                  left: '8.65%',
+                  width: '83.65%',
+                  height: '38.0%',
+                }
+          }
         />
       )}
 
@@ -351,23 +446,25 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
 
 
 
-        {/* POKEDEX SUB-BAR (Absolute positioned right on top of the silver ribbon) */}
-        <div 
-          className="absolute flex items-center justify-center text-[8.5px] text-slate-800 font-semibold tracking-tight bg-transparent text-center leading-none"
-          style={{
-            top: '47.5%',
-            left: '6.44%',
-            width: '87.12%',
-            height: '2.8%',
-          }}
-        >
-          <span>
-            {card.dexNumber ? `全国図鑑${card.dexNumber} ` : ''}
-            {card.dexSpecies ? `${card.dexSpecies} ` : ''}
-            {card.dexHeight ? `高さ：${card.dexHeight} ` : ''}
-            {card.dexWeight ? `重さ：${card.dexWeight}` : ''}
-          </span>
-        </div>
+        {/* POKEDEX SUB-BAR (Absolute positioned right on top of the silver ribbon) - Hidden when Full Art or EX */}
+        {!isFullArt && !isEx && (
+          <div 
+            className="absolute flex items-center justify-center text-[8.5px] text-slate-800 font-semibold tracking-tight bg-transparent text-center leading-none"
+            style={{
+              top: '47.5%',
+              left: '6.44%',
+              width: '87.12%',
+              height: '2.8%',
+            }}
+          >
+            <span>
+              {card.dexNumber ? `全国図鑑${card.dexNumber} ` : ''}
+              {card.dexSpecies ? `${card.dexSpecies} ` : ''}
+              {card.dexHeight ? `高さ：${card.dexHeight} ` : ''}
+              {card.dexWeight ? `重さ：${card.dexWeight}` : ''}
+            </span>
+          </div>
+        )}
 
         {/* ABILITY & MOVES CONTENT AREA */}
         <div 
@@ -705,8 +802,8 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
               </div>
             </div>
 
-            {/* Right: Flavor Text */}
-            {card.flavorText && (
+            {/* Right: Flavor Text - Hidden when EX */}
+            {!isEx && card.flavorText && (
               <div 
                 data-text-stroke="true"
                 className="text-[8px] leading-[1.3] text-right max-w-[220px] line-clamp-2 text-slate-800 card-text-stroke"

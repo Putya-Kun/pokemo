@@ -15,6 +15,8 @@ export type PokemonType =
 
 export type PokemonStage = 'たね' | '1進化' | '2進化';
 
+export type PokemonCardStyle = 'normal' | 'normal_ex' | 'fullart' | 'fullart_ex';
+
 export type TrainerCategory =
   | 'item' // グッズ
   | 'supporter' // サポート
@@ -58,6 +60,7 @@ export interface PokemonCardData {
   primaryType: PokemonType;
   secondaryType?: PokemonType;
   stage: PokemonStage;
+  cardStyle?: PokemonCardStyle;
   evolvesFrom?: string; // e.g. "ピカチュウから進化"
   nameIcon?: string; // e.g. "assets/exicon/icon-ex-sv.webp"
   dexSpecies: string; // e.g. "ねずみポケモン"

@@ -3,25 +3,13 @@ import { Upload, Image as ImageIcon, ZoomIn, Move } from 'lucide-react';
 
 interface ImageUploaderProps {
   imageUrl: string;
-  imageScale: number;
-  imagePositionX: number;
-  imagePositionY: number;
-  imageFit: 'cover' | 'contain';
   onUpdate: (data: {
     imageUrl?: string;
-    imageScale?: number;
-    imagePositionX?: number;
-    imagePositionY?: number;
-    imageFit?: 'cover' | 'contain';
   }) => void;
 }
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({
   imageUrl,
-  imageScale,
-  imagePositionX,
-  imagePositionY,
-  imageFit,
   onUpdate,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,9 +27,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         if (event.target?.result) {
           onUpdate({
             imageUrl: event.target.result as string,
-            imageScale: 1.0,
-            imagePositionX: 0,
-            imagePositionY: 0,
           });
         }
       };
@@ -58,9 +43,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         if (event.target?.result) {
           onUpdate({
             imageUrl: event.target.result as string,
-            imageScale: 1.0,
-            imagePositionX: 0,
-            imagePositionY: 0,
           });
         }
       };
@@ -127,104 +109,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400"
         />
       </div>
-
-
-
-      {/* Image Position & Scale Controls */}
-      {imageUrl && (
-        <div className="bg-slate-800/70 p-3 rounded-xl border border-slate-700/60 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-300 flex items-center gap-1">
-              <ZoomIn className="w-3.5 h-3.5 text-amber-400" />
-              イラストの拡大・縮小
-            </span>
-            <span className="text-xs font-mono text-amber-400">
-              {Math.round(imageScale * 100)}%
-            </span>
-          </div>
-          <input
-            type="range"
-            min="0.5"
-            max="2.5"
-            step="0.05"
-            value={imageScale}
-            onChange={(e) => onUpdate({ imageScale: parseFloat(e.target.value) })}
-            className="w-full accent-amber-400 cursor-pointer"
-          />
-
-          <div className="grid grid-cols-2 gap-3 pt-1">
-            <div>
-              <label className="text-[11px] text-slate-400 block mb-1 flex items-center gap-1">
-                <Move className="w-3 h-3" /> 左右位置 (X)
-              </label>
-              <input
-                type="range"
-                min="-50"
-                max="50"
-                step="1"
-                value={imagePositionX}
-                onChange={(e) => onUpdate({ imagePositionX: parseInt(e.target.value) })}
-                className="w-full accent-amber-400 cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="text-[11px] text-slate-400 block mb-1 flex items-center gap-1">
-                <Move className="w-3 h-3" /> 上下位置 (Y)
-              </label>
-              <input
-                type="range"
-                min="-50"
-                max="50"
-                step="1"
-                value={imagePositionY}
-                onChange={(e) => onUpdate({ imagePositionY: parseInt(e.target.value) })}
-                className="w-full accent-amber-400 cursor-pointer"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center pt-1 border-t border-slate-700/60">
-            <span className="text-[11px] text-slate-400">フィット形式</span>
-            <div className="flex gap-1.5">
-              <button
-                type="button"
-                onClick={() => onUpdate({ imageFit: 'cover' })}
-                className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
-                  imageFit === 'cover'
-                    ? 'bg-amber-400 text-slate-950'
-                    : 'bg-slate-700 text-slate-300'
-                }`}
-              >
-                全体カバー
-              </button>
-              <button
-                type="button"
-                onClick={() => onUpdate({ imageFit: 'contain' })}
-                className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
-                  imageFit === 'contain'
-                    ? 'bg-amber-400 text-slate-950'
-                    : 'bg-slate-700 text-slate-300'
-                }`}
-              >
-                枠内に収める
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  onUpdate({
-                    imageScale: 1.0,
-                    imagePositionX: 0,
-                    imagePositionY: 0,
-                  })
-                }
-                className="px-2 py-0.5 rounded text-[11px] bg-slate-700 hover:bg-slate-600 text-slate-300"
-              >
-                リセット
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

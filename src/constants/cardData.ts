@@ -1,4 +1,4 @@
-import { PokemonType, TrainerCategory, CardRarity, FoilEffect, MoveTheme, PokemonCardData, TrainerCardData } from '../types';
+import { PokemonType, TrainerCategory, CardRarity, FoilEffect, MoveTheme, PokemonCardData, TrainerCardData, PokemonCardStyle } from '../types';
 
 export interface TypeMeta {
   id: PokemonType;
@@ -221,6 +221,13 @@ export const STAGE_OPTIONS: PokemonCardData['stage'][] = [
   'たね',
   '1進化',
   '2進化',
+];
+
+export const CARD_STYLE_OPTIONS: { value: PokemonCardStyle; label: string; desc: string }[] = [
+  { value: 'normal', label: 'ノーマル', desc: '通常フレーム' },
+  { value: 'normal_ex', label: 'ノーマルEX', desc: '通常フレーム (ex)' },
+  { value: 'fullart', label: 'フルアート', desc: '全画面アート' },
+  { value: 'fullart_ex', label: 'フルアートEX', desc: '全画面アート (ex)' },
 ];
 
 // Sample Illustrations (SVG Data URLs for crisp, instantly available card art)

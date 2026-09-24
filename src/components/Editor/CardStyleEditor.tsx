@@ -13,7 +13,7 @@ export const CardStyleEditor: React.FC<CardStyleEditorProps> = ({
   onUpdate,
 }) => {
   const isTrainer = card.kind === 'trainer';
-  const currentFrameId = isTrainer ? 'none' : (card.selectedFrame || 'none');
+  const currentFrameId = isTrainer ? 'none' : (card.selectedFrame || 'normal');
 
   return (
     <div className="space-y-5">
@@ -89,13 +89,10 @@ export const CardStyleEditor: React.FC<CardStyleEditorProps> = ({
                   )}
                 </div>
 
-                {/* Name & Desc */}
+                {/* Name */}
                 <div className="w-full text-center">
                   <span className="text-[11px] font-bold text-slate-100 block truncate">
                     {opt.name}
-                  </span>
-                  <span className="text-[9px] text-slate-400 block truncate leading-tight mt-0.5">
-                    {opt.description}
                   </span>
                 </div>
               </button>

@@ -1,6 +1,6 @@
 import React from 'react';
-import { CardData, PokemonCardData, PokemonStage, PokemonType, TrainerCardData, TrainerCategory } from '../../types';
-import { STAGE_OPTIONS, TRAINER_CATEGORY_CONFIG, TYPE_CONFIG } from '../../constants/cardData';
+import { CardData, PokemonCardData, PokemonStage, PokemonType, TrainerCardData, TrainerCategory, PokemonCardStyle } from '../../types';
+import { STAGE_OPTIONS, CARD_STYLE_OPTIONS, TRAINER_CATEGORY_CONFIG, TYPE_CONFIG } from '../../constants/cardData';
 import { TRAINER_CATEGORY_ICONS, EX_ICON_OPTIONS } from '../../constants/energyImages';
 import { EnergyIcon } from '../EnergyIcon';
 import { User, Sparkles, Wand2, ShieldCheck, X } from 'lucide-react';
@@ -259,64 +259,112 @@ export const BasicInfoEditor: React.FC<BasicInfoEditorProps> = ({
             )}
           </div>
 
-          {/* Pokedex Sub-Info */}
-          <div className="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 space-y-2">
-            <span className="text-xs font-bold text-slate-300 block">
-              図鑑・ステータス詳細
-            </span>
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <label className="text-[10px] text-slate-400 block mb-0.5">
-                  図鑑番号
-                </label>
-                <input
-                  type="text"
-                  value={pokemonCard.dexNumber}
-                  onChange={(e) => onUpdate({ dexNumber: e.target.value })}
-                  placeholder="NO. 0025"
-                  className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] text-slate-400 block mb-0.5">
-                  分類
-                </label>
-                <input
-                  type="text"
-                  value={pokemonCard.dexSpecies}
-                  onChange={(e) => onUpdate({ dexSpecies: e.target.value })}
-                  placeholder="ねずみポケモン"
-                  className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-1">
-                <div>
-                  <label className="text-[10px] text-slate-400 block mb-0.5">
-                    高さ
-                  </label>
-                  <input
-                    type="text"
-                    value={pokemonCard.dexHeight}
-                    onChange={(e) => onUpdate({ dexHeight: e.target.value })}
-                    placeholder="0.4m"
-                    className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-xs text-slate-200"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] text-slate-400 block mb-0.5">
-                    重さ
-                  </label>
-                  <input
-                    type="text"
-                    value={pokemonCard.dexWeight}
-                    onChange={(e) => onUpdate({ dexWeight: e.target.value })}
-                    placeholder="6.0kg"
-                    className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-xs text-slate-200"
-                  />
-                </div>
-              </div>
+          {/* Card Style (ノーマル / ノーマルEX / フルアート / フルアートEX) */}
+          <div>
+            <label className="text-xs font-bold text-slate-300 block mb-1.5">
+              スタイル
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {CARD_STYLE_OPTIONS.map((styleOpt) => {
+                const currentStyle = pokemonCard.cardStyle || 'normal';
+                const isSelected = currentStyle === styleOpt.value;
+                return (
+                  <button
+                    key={styleOpt.value}
+                    type="button"
+                    onClick={() => {
+                      onUpdate({ cardStyle: styleOpt.value });
+                    }}
+                    className={`h-10 flex flex-col items-center justify-center px-2 py-1 rounded-xl border text-xs font-bold transition-all text-center ${
+                      isSelected
+                        ? 'border-amber-400 bg-amber-500/20 text-amber-300 shadow-md ring-2 ring-amber-400/40'
+                        : 'border-slate-700 bg-slate-800/60 text-slate-300 hover:bg-slate-700/60'
+                    }`}
+                  >
+                    <span>{styleOpt.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
+
+          {/* Pokedex Sub-Info */}
+          {(() => {
+            const isFullArtPokemon = pokemonCard.cardStyle === 'fullart' || pokemonCard.cardStyle === 'fullart_ex';
+            const isExPokemon = (pokemonCard.suffix && pokemonCard.suffix.toLowerCase() === 'ex') || pokemonCard.cardStyle === 'normal_ex' || pokemonCard.cardStyle === 'fullart_ex';
+            const isDexDisabled = isFullArtPokemon || isExPokemon;
+            return (
+              <div
+                className={`p-3 rounded-xl border transition-all space-y-2 ${
+                  isDexDisabled
+                    ? 'bg-slate-800/20 border-slate-700/30 opacity-40 cursor-not-allowed select-none'
+                    : 'bg-slate-800/60 border-slate-700/60'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-300 block">
+                    図鑑・ステータス詳細
+                  </span>
+                </div>
+                <div className={`grid grid-cols-3 gap-2 ${isDexDisabled ? 'pointer-events-none' : ''}`}>
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-0.5">
+                      図鑑番号
+                    </label>
+                    <input
+                      type="text"
+                      disabled={isDexDisabled}
+                      value={pokemonCard.dexNumber}
+                      onChange={(e) => onUpdate({ dexNumber: e.target.value })}
+                      placeholder="NO. 0025"
+                      className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 disabled:opacity-50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-0.5">
+                      分類
+                    </label>
+                    <input
+                      type="text"
+                      disabled={isDexDisabled}
+                      value={pokemonCard.dexSpecies}
+                      onChange={(e) => onUpdate({ dexSpecies: e.target.value })}
+                      placeholder="ねずみポケモン"
+                      className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 disabled:opacity-50"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-1">
+                    <div>
+                      <label className="text-[10px] text-slate-400 block mb-0.5">
+                        高さ
+                      </label>
+                      <input
+                        type="text"
+                        disabled={isDexDisabled}
+                        value={pokemonCard.dexHeight}
+                        onChange={(e) => onUpdate({ dexHeight: e.target.value })}
+                        placeholder="0.4m"
+                        className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-xs text-slate-200 disabled:opacity-50"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-slate-400 block mb-0.5">
+                        重さ
+                      </label>
+                      <input
+                        type="text"
+                        disabled={isDexDisabled}
+                        value={pokemonCard.dexWeight}
+                        onChange={(e) => onUpdate({ dexWeight: e.target.value })}
+                        placeholder="6.0kg"
+                        className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-xs text-slate-200 disabled:opacity-50"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </>
       ) : (
         /* TRAINER SPECIFIC FIELDS */

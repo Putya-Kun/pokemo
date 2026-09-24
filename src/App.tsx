@@ -27,10 +27,47 @@ import {
 type TabType = 'basic' | 'image' | 'moves' | 'stats' | 'style' | 'saved';
 
 export default function App() {
-  // Initial default card (Pikachu ex)
+  // Saved state for pokemon card and trainer card so switching keeps all properties
+  const [pokemonHistory, setPokemonHistory] = useState<PokemonCardData>(() => {
+    const cardData = JSON.parse(JSON.stringify(PRESET_CARDS[0].data)) as PokemonCardData;
+    cardData.imageUrl = '';
+    return cardData;
+  });
+
+  const [trainerHistory, setTrainerHistory] = useState<TrainerCardData>(() => {
+    const trainerPreset = PRESET_CARDS.find((p) => p.data.kind === 'trainer')?.data as TrainerCardData;
+    if (trainerPreset) {
+      const cardData = JSON.parse(JSON.stringify(trainerPreset)) as TrainerCardData;
+      cardData.imageUrl = '';
+      cardData.name = 'ブロロン';
+      return cardData;
+    }
+    return {
+      kind: 'trainer',
+      id: 't_default',
+      name: 'ブロロン',
+      category: 'supporter',
+      ruleText: 'サポートは、自分の番に1枚しか使えない。',
+      effectText: 'お互いのプレイヤーは、それぞれ自分の手札をすべてウラにして切り、山札の下にもどす。\nその後、それぞれ自分のサイドの残り枚数ぶん、山札を引く。',
+      isFullArt: false,
+      illustrator: 'kirisAki',
+      cardNumber: '091/071',
+      setSymbol: 'SV2D',
+      regulationMark: 'G',
+      rarity: 'SR',
+      foilEffect: 'none',
+      selectedFrame: 'none',
+      imageUrl: '',
+      imageScale: 1.0,
+      imagePositionX: 0,
+      imagePositionY: 0,
+      imageFit: 'cover',
+    };
+  });
+
   const [currentCard, setCurrentCard] = useState<CardData>(() => {
     const cardData = JSON.parse(JSON.stringify(PRESET_CARDS[0].data));
-    cardData.imageUrl = ''; // Default image URL is empty
+    cardData.imageUrl = '';
     return cardData;
   });
 
@@ -61,6 +98,19 @@ export default function App() {
         ...updated,
       } as CardData;
 
+      // Update the respective history
+      if (next.kind === 'pokemon') {
+        setPokemonHistory(next as PokemonCardData);
+      } else {
+        setTrainerHistory(next as TrainerCardData);
+      }
+
+      // カード名・キャラクター名はポケモンとトレーナーズで常に共通保持
+      if (updated.name !== undefined) {
+        setPokemonHistory((prevP) => ({ ...prevP, name: updated.name! }));
+        setTrainerHistory((prevT) => ({ ...prevT, name: updated.name! }));
+      }
+
       // 画像の移動・拡大縮小などスライド操作時は遅延なくリアルタイム同期
       if (
         updated.imagePositionX !== undefined ||
@@ -77,37 +127,49 @@ export default function App() {
   const handleSwitchKind = (kind: 'pokemon' | 'trainer') => {
     if (kind === currentCard.kind) return;
     if (kind === 'pokemon') {
-      const pokemonPreset = PRESET_CARDS.find((p) => p.data.kind === 'pokemon')?.data;
-      if (pokemonPreset) {
-        setCurrentCard({
-          ...JSON.parse(JSON.stringify(pokemonPreset)),
-          name: currentCard.name && currentCard.name !== 'ナンジャモ' && currentCard.name !== '博士の研究' ? currentCard.name : 'ピカチュウ',
-          imageUrl: currentCard.imageUrl || '',
-          illustrator: currentCard.illustrator || pokemonPreset.illustrator,
-          cardNumber: currentCard.cardNumber || pokemonPreset.cardNumber,
-          setSymbol: currentCard.setSymbol || pokemonPreset.setSymbol,
-          regulationMark: currentCard.regulationMark || pokemonPreset.regulationMark,
-          rarity: currentCard.rarity || pokemonPreset.rarity,
-          selectedFrame: currentCard.selectedFrame || 'normal',
-        });
-      }
+      // Restore Pokemon card state completely, retaining user's selected type, stats, moves, dex, etc.
+      const restoredPokemon: PokemonCardData = {
+        ...pokemonHistory,
+        // キャラクター名を共通保持
+        name: currentCard.name || pokemonHistory.name,
+        // Share image and illustration details if user changed them
+        imageUrl: currentCard.imageUrl || pokemonHistory.imageUrl || '',
+        imageScale: currentCard.imageScale ?? pokemonHistory.imageScale,
+        imagePositionX: currentCard.imagePositionX ?? pokemonHistory.imagePositionX,
+        imagePositionY: currentCard.imagePositionY ?? pokemonHistory.imagePositionY,
+        imageFit: currentCard.imageFit ?? pokemonHistory.imageFit,
+        illustrator: currentCard.illustrator || pokemonHistory.illustrator,
+        cardNumber: currentCard.cardNumber || pokemonHistory.cardNumber,
+        setSymbol: currentCard.setSymbol || pokemonHistory.setSymbol,
+        regulationMark: currentCard.regulationMark || pokemonHistory.regulationMark,
+        rarity: currentCard.rarity || pokemonHistory.rarity,
+      };
+
+      setCurrentCard(restoredPokemon);
+      setPreviewCard(restoredPokemon);
       showToast('ポケモンカードレイアウトに切り替えました');
     } else {
-      const trainerPreset = PRESET_CARDS.find((p) => p.data.kind === 'trainer')?.data;
-      if (trainerPreset) {
-        setCurrentCard({
-          ...JSON.parse(JSON.stringify(trainerPreset)),
-          name: currentCard.name && currentCard.name !== 'ピカチュウ' && currentCard.name !== 'リザードン' ? currentCard.name : 'ナンジャモ',
-          imageUrl: currentCard.imageUrl || '',
-          isFullArt: false, // Default full-art to false
-          illustrator: currentCard.illustrator || trainerPreset.illustrator,
-          cardNumber: currentCard.cardNumber || trainerPreset.cardNumber,
-          setSymbol: currentCard.setSymbol || trainerPreset.setSymbol,
-          regulationMark: currentCard.regulationMark || trainerPreset.regulationMark,
-          rarity: currentCard.rarity || trainerPreset.rarity,
-          selectedFrame: 'none', // Trainer cards force no frame
-        });
-      }
+      // Restore Trainer card state completely
+      const restoredTrainer: TrainerCardData = {
+        ...trainerHistory,
+        // キャラクター名を共通保持
+        name: currentCard.name || trainerHistory.name,
+        // Share image and illustration details
+        imageUrl: currentCard.imageUrl || trainerHistory.imageUrl || '',
+        imageScale: currentCard.imageScale ?? trainerHistory.imageScale,
+        imagePositionX: currentCard.imagePositionX ?? trainerHistory.imagePositionX,
+        imagePositionY: currentCard.imagePositionY ?? trainerHistory.imagePositionY,
+        imageFit: currentCard.imageFit ?? trainerHistory.imageFit,
+        illustrator: currentCard.illustrator || trainerHistory.illustrator,
+        cardNumber: currentCard.cardNumber || trainerHistory.cardNumber,
+        setSymbol: currentCard.setSymbol || trainerHistory.setSymbol,
+        regulationMark: currentCard.regulationMark || trainerHistory.regulationMark,
+        rarity: currentCard.rarity || trainerHistory.rarity,
+        selectedFrame: 'none',
+      };
+
+      setCurrentCard(restoredTrainer);
+      setPreviewCard(restoredTrainer);
       showToast('トレーナーズカードレイアウトに切り替えました');
     }
   };
@@ -213,10 +275,6 @@ export default function App() {
             {activeTab === 'image' && (
               <ImageUploader
                 imageUrl={currentCard.imageUrl}
-                imageScale={currentCard.imageScale}
-                imagePositionX={currentCard.imagePositionX}
-                imagePositionY={currentCard.imagePositionY}
-                imageFit={currentCard.imageFit}
                 onUpdate={handleUpdateCard}
               />
             )}
@@ -247,6 +305,11 @@ export default function App() {
                 currentCard={currentCard}
                 onLoadCard={(c) => {
                   setCurrentCard(c);
+                  if (c.kind === 'pokemon') {
+                    setPokemonHistory(c as PokemonCardData);
+                  } else {
+                    setTrainerHistory(c as TrainerCardData);
+                  }
                   showToast(`「${c.name}」を読み込みました`);
                 }}
                 onSaveNotification={showToast}
