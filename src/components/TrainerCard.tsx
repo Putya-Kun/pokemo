@@ -72,11 +72,19 @@ interface TrainerCardProps {
   card: TrainerCardData;
 }
 
+const TRAINER_OVERLAY_IMAGES: Record<string, string> = {
+  supporter: 'assets/trainer/support.png',
+  item: 'assets/trainer/goods.png',
+  stadium: 'assets/trainer/studium.png',
+  tool: 'assets/trainer/pokedougu.png',
+};
+
 export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => {
   const catConfig = TRAINER_CATEGORY_CONFIG[card.category] || TRAINER_CATEGORY_CONFIG.item;
   const isAceSpec = card.category === 'ace_spec';
   const frameUrl = getFrameUrl(card.selectedFrame);
   const trainerBgUrl = TRAINER_BACKGROUND_TEXTURES[card.category] || 'assets/back/basic-normal.png';
+  const overlayImageUrl = TRAINER_OVERLAY_IMAGES[card.category];
 
   // 【フルアート時の効果テキスト用：白縁取り（ポケモンカードと同等仕様）】
   const textOutlineStyle: React.CSSProperties = {
@@ -152,6 +160,20 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
         />
       )}
 
+      {/* 3.1 Trainer Category Overlay Image Layer (z-35) - Full size layer overlay as requested */}
+      {overlayImageUrl && (
+        <img
+          src={overlayImageUrl}
+          alt="Trainer Category Overlay"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-35 select-none"
+          loading="eager"
+          decoding="sync"
+          onError={(e) => {
+            (e.target as HTMLElement).style.display = 'none';
+          }}
+        />
+      )}
+
       {/* 4. Interactive Image Drag Handle (枠の中だけを選択してスライド・移動できるようにする) */}
       {card.imageUrl && (
         <div
@@ -174,28 +196,30 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
       {/* 5. Main Card Content Layer */}
       <div className="absolute inset-0 w-full h-full pointer-events-auto z-40 select-none">
         
-        {/* TOP CATEGORY BAR (トレーナーズ / サポート / グッズ / スタジアム / どうぐ) */}
-        <div 
-          className="absolute flex items-center justify-between"
-          style={{
-            top: '4.8%',
-            left: '6.44%',
-            width: '87.12%',
-            height: '4.8%',
-          }}
-        >
-          {/* Category Banner Badge */}
-          <div className="flex items-center gap-1.5">
-            <span
-              className="px-2.5 py-0.5 rounded-[4px] text-[11px] font-dela font-bold text-white shadow-sm flex items-center gap-1 tracking-wider leading-none"
-              style={{ backgroundColor: catConfig.bannerColor }}
-            >
-              <span>TRAINER'S</span>
-              <span className="opacity-75 text-[8px] font-normal">|</span>
-              <span>{catConfig.jpName}</span>
-            </span>
+        {/* TOP CATEGORY BAR (トレーナーズ / サポート / グッズ / スタジアム / どうぐ) - Hide when overlay image is present */}
+        {!overlayImageUrl && (
+          <div 
+            className="absolute flex items-center justify-between"
+            style={{
+              top: '4.8%',
+              left: '6.44%',
+              width: '87.12%',
+              height: '4.8%',
+            }}
+          >
+            {/* Category Banner Badge */}
+            <div className="flex items-center gap-1.5">
+              <span
+                className="px-2.5 py-0.5 rounded-[4px] text-[11px] font-dela font-bold text-white shadow-sm flex items-center gap-1 tracking-wider leading-none"
+                style={{ backgroundColor: catConfig.bannerColor }}
+              >
+                <span>TRAINER'S</span>
+                <span className="opacity-75 text-[8px] font-normal">|</span>
+                <span>{catConfig.jpName}</span>
+              </span>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* TRAINER CARD NAME HEADER */}
         <div 

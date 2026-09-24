@@ -45,11 +45,12 @@ export const EnergyIcon: React.FC<EnergyIconProps> = React.memo(({
           minWidth: `${customSize}px`,
           minHeight: `${customSize}px`,
         } : {}),
-        border: withWhiteBorder ? `${whiteBorderWidth}px solid #ffffff` : 'none',
+        border: 'none',
         boxSizing: 'border-box',
-        boxShadow: showShadow
-          ? '0 0 1.5px rgba(0,0,0,0.35)'
-          : undefined,
+        boxShadow: [
+          withWhiteBorder ? `inset 0 0 0 ${whiteBorderWidth}px #ffffff` : '',
+          showShadow ? '0 0 1.5px rgba(0,0,0,0.35)' : '',
+        ].filter(Boolean).join(', ') || undefined,
         ...style,
       }}
       title={type}
