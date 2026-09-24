@@ -681,7 +681,7 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
 
                 {/* 右：セットシンボル（黒地＋白縁取り＋黒外枠の角丸四角形） */}
                 <span
-                  className="inline-flex items-center justify-center px-1.5 py-[0.5px] h-[15px] bg-black text-white text-[8px] font-black rounded-[3px] border border-white shadow-[0_0_0_1px_rgba(0,0,0,0.9)] leading-none tracking-tight select-none not-italic"
+                  className="inline-flex items-center justify-center px-1.5 py-[0.5px] h-[15px] bg-black text-white text-[8px] font-black rounded-[3px] border-none shadow-[0_0_0_1px_#ffffff,0_0_0_2px_rgba(0,0,0,0.9)] leading-none tracking-tight select-none not-italic"
                 >
                   {card.setSymbol || 'sv1S'}
                 </span>
