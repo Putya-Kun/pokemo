@@ -589,6 +589,7 @@ export const PRESET_CARDS: { id: string; name: string; tag: string; data: Pokemo
       regulationMark: 'G',
       rarity: 'SAR',
       foilEffect: 'rainbow',
+      selectedFrame: 'normal',
       customCardTag: 'フルアート',
     },
   },
@@ -615,6 +616,7 @@ export const PRESET_CARDS: { id: string; name: string; tag: string; data: Pokemo
       regulationMark: 'G',
       rarity: 'U',
       foilEffect: 'none',
+      selectedFrame: 'normal',
     },
   },
   {
@@ -640,6 +642,7 @@ export const PRESET_CARDS: { id: string; name: string; tag: string; data: Pokemo
       regulationMark: 'H',
       rarity: 'UR',
       foilEffect: 'gold',
+      selectedFrame: 'normal',
     },
   },
 ];

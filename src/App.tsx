@@ -56,7 +56,7 @@ export default function App() {
       regulationMark: 'G',
       rarity: 'SR',
       foilEffect: 'none',
-      selectedFrame: 'none',
+      selectedFrame: 'normal',
       imageUrl: '',
       imageScale: 1.0,
       imagePositionX: 0,
@@ -165,7 +165,7 @@ export default function App() {
         setSymbol: currentCard.setSymbol || trainerHistory.setSymbol,
         regulationMark: currentCard.regulationMark || trainerHistory.regulationMark,
         rarity: currentCard.rarity || trainerHistory.rarity,
-        selectedFrame: 'none',
+        selectedFrame: trainerHistory.selectedFrame || 'normal',
       };
 
       setCurrentCard(restoredTrainer);

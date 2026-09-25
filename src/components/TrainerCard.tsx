@@ -4,14 +4,26 @@ import { TRAINER_CATEGORY_CONFIG } from '../constants/cardData';
 import { TRAINER_BACKGROUND_TEXTURES, getFrameUrl } from '../constants/energyImages';
 
 // =========================================================================
-// 【トレーナーズカード描画カスタム調整定数 (コードから調整可能)】
+// 【トレーナーズカード描画カスタム調整定数 (コードから直接調整可能)】
 // =========================================================================
 export const TRAINER_CARD_LAYOUT_CONFIG = {
-  // 通常枠のイラスト表示位置・サイズ (背景カードに合わせてサイズ調整可能)
-  IMAGE_TOP: '14.2%',    // 画像の上の位置
-  IMAGE_LEFT: '8.5%',   // 画像の左の位置
-  IMAGE_WIDTH: '84.7%',  // 画像の横幅 (小さめの枠に設定)
-  IMAGE_HEIGHT: '38.3%', // 画像の高さ (小さめの枠に設定)
+  // -------------------------------------------------------------------------
+  // 【1. 通常仕様（ノーマル）のイラスト表示枠設定】
+  // -------------------------------------------------------------------------
+  IMAGE_TOP: '14.2%',    // 画像の上の位置 (初期値: 14.2%)
+  IMAGE_LEFT: '8.5%',   // 画像の左の位置 (初期値: 8.5%)
+  IMAGE_WIDTH: '84.7%',  // 画像の横幅 (初期値: 84.7%)
+  IMAGE_HEIGHT: '38.3%', // 画像の高さ (初期値: 38.3%)
+
+  // -------------------------------------------------------------------------
+  // 【2. フルアート仕様のイラスト表示領域設定 (745x1040 / 最大全体表示)】
+  // ※ フルアート時の画像の表示範囲や余白を微調整したい場合はここを変更してください
+  // -------------------------------------------------------------------------
+  FULLART_IMAGE_TOP: '0%',      // 上の位置 (0% でカード最上部まで最大化)
+  FULLART_IMAGE_LEFT: '0%',     // 左の位置 (0% でカード最左部まで最大化)
+  FULLART_IMAGE_WIDTH: '115%',  // 横幅 (100% でカード横幅最大まで)
+  FULLART_IMAGE_HEIGHT: '120%', // 高さ (100% でカード下部最大まで)
+  FULLART_OBJECT_FIT: 'cover' as const, // 画像のフィット方法 ('cover' | 'contain')
 
   // 効果テキストエリア設定 (背景画像にテキスト枠があるためデフォルトで余分な図形枠を非表示)
   TEXT_BOX_SHOW_BORDER: false, // trueにすると白い四角形枠を描画、falseで背景画像枠の上に直書き
@@ -82,9 +94,16 @@ const TRAINER_OVERLAY_IMAGES: Record<string, string> = {
 export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => {
   const catConfig = TRAINER_CATEGORY_CONFIG[card.category] || TRAINER_CATEGORY_CONFIG.item;
   const isAceSpec = card.category === 'ace_spec';
-  const frameUrl = getFrameUrl(card.selectedFrame);
+  const selectedFrame = card.selectedFrame || 'normal';
+  const isGoldFrame = selectedFrame === 'gold';
+  const frameUrl = getFrameUrl(selectedFrame);
   const trainerBgUrl = TRAINER_BACKGROUND_TEXTURES[card.category] || 'assets/back/basic-normal.png';
   const overlayImageUrl = TRAINER_OVERLAY_IMAGES[card.category];
+  const trainerHeaderUrl = isGoldFrame
+    ? 'assets/trainer/trainer-header-gold.webp'
+    : card.isFullArt
+    ? 'assets/trainer/trainer-header-full-art.webp'
+    : 'assets/trainer/trainer-header.webp';
 
   // 【フルアート時の効果テキスト用：白縁取り（ポケモンカードと同等仕様）】
   const textOutlineStyle: React.CSSProperties = {
@@ -108,38 +127,75 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
       }}
     >
       {/* 1. ARTWORK LAYER (Lowest priority z-1: Spans full canvas without tight box clipping, sitting strictly BEHIND background, frames & text) */}
-      <div className="absolute inset-0 w-full h-full z-1 pointer-events-none flex items-center justify-center">
+      <div 
+        className="absolute z-1 pointer-events-none overflow-hidden"
+        style={
+          card.isFullArt
+            ? {
+                top: TRAINER_CARD_LAYOUT_CONFIG.FULLART_IMAGE_TOP,
+                left: TRAINER_CARD_LAYOUT_CONFIG.FULLART_IMAGE_LEFT,
+                width: TRAINER_CARD_LAYOUT_CONFIG.FULLART_IMAGE_WIDTH,
+                height: TRAINER_CARD_LAYOUT_CONFIG.FULLART_IMAGE_HEIGHT,
+              }
+            : {
+                inset: 0,
+              }
+        }
+      >
         {card.imageUrl ? (
           <img
             src={card.imageUrl}
             alt={card.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full"
             referrerPolicy="no-referrer"
             style={{
               transform: `scale(${card.imageScale}) translate(${card.imagePositionX}%, ${card.imagePositionY}%)`,
-              objectFit: card.imageFit,
+              objectFit: card.isFullArt ? TRAINER_CARD_LAYOUT_CONFIG.FULLART_OBJECT_FIT : card.imageFit,
             }}
           />
         ) : (
           <div 
             className="absolute flex flex-col items-center justify-center bg-slate-800/80 text-slate-300 text-xs rounded-lg border border-dashed border-slate-600 pointer-events-auto"
-            style={{
-              top: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_TOP,
-              left: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_LEFT,
-              width: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_WIDTH,
-              height: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_HEIGHT,
-            }}
+            style={
+              card.isFullArt
+                ? {
+                    top: '15%',
+                    left: '10%',
+                    width: '80%',
+                    height: '70%',
+                  }
+                : {
+                    top: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_TOP,
+                    left: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_LEFT,
+                    width: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_WIDTH,
+                    height: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_HEIGHT,
+                  }
+            }
           >
             <span>画像が設定されていません</span>
           </div>
         )}
       </div>
 
-      {/* 2. Background Texture Layer from assets/back/ (z-10) */}
-      {trainerBgUrl && (
+      {/* 2. Background Texture Layer from assets/back/ (z-10: Hidden when Full Art is ON) */}
+      {!card.isFullArt && trainerBgUrl && (
         <img
           src={trainerBgUrl}
           alt="Trainer Card Background"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 select-none"
+          loading="eager"
+          decoding="sync"
+          onError={(e) => {
+            (e.target as HTMLElement).style.display = 'none';
+          }}
+        />
+      )}
+
+      {/* 2b. Full Art Stripes Overlay Layer (z-10: assets/trainer/trainer-supporter-stripes.webp on top of full-bleed artwork) */}
+      {card.isFullArt && (
+        <img
+          src="assets/trainer/trainer-supporter-stripes.webp"
+          alt="Trainer Full Art Stripes Overlay"
           className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 select-none"
           loading="eager"
           decoding="sync"
@@ -160,28 +216,24 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
         />
       )}
 
-      {/* 3.2 Visual Effects Layer (z-38: Multi-layer effects from assets/visualeffect/ on top of frame/background, under category overlay & text) */}
-      {card.visualEffects && card.visualEffects.length > 0 && (
-        <>
-          {card.visualEffects.map((fxUrl, idx) => (
-            <img
-              key={`${fxUrl}-${idx}`}
-              src={fxUrl}
-              alt={`Visual Effect ${idx + 1}`}
-              className="absolute inset-0 w-full h-full object-fill pointer-events-none z-38 select-none"
-              loading="eager"
-              decoding="sync"
-            />
-          ))}
-        </>
-      )}
+      {/* 3.1 Trainer Header Overlay Layer (z-39: assets/trainer/trainer-header-gold.webp for gold frame, assets/trainer/trainer-header-full-art.webp for full art, assets/trainer/trainer-header.webp otherwise) */}
+      <img
+        src={trainerHeaderUrl}
+        alt="Trainer Header Overlay"
+        className="absolute inset-0 w-full h-full object-fill pointer-events-none z-39 select-none"
+        loading="eager"
+        decoding="sync"
+        onError={(e) => {
+          (e.target as HTMLElement).style.display = 'none';
+        }}
+      />
 
-      {/* 3.3 Trainer Category Overlay Image Layer (z-42) - Full size layer overlay above visual effects */}
-      {overlayImageUrl && (
+      {/* 3.1b Full Art Supporter Rule Overlay (z-39: assets/trainer/trainer-supporter-rule.webp when Full Art is ON) */}
+      {card.isFullArt && (
         <img
-          src={overlayImageUrl}
-          alt="Trainer Category Overlay"
-          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-42 select-none"
+          src="assets/trainer/trainer-supporter-rule.webp"
+          alt="Trainer Full Art Supporter Rule Overlay"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-39 select-none"
           loading="eager"
           decoding="sync"
           onError={(e) => {
@@ -190,15 +242,50 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
         />
       )}
 
+      {/* 3.2 Trainer Category Overlay Image Layer (z-41: Left top category overlay from assets/other/) */}
+      {overlayImageUrl && (
+        <img
+          src={overlayImageUrl}
+          alt="Trainer Category Overlay"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-41 select-none"
+          loading="eager"
+          decoding="sync"
+          onError={(e) => {
+            (e.target as HTMLElement).style.display = 'none';
+          }}
+        />
+      )}
+
+      {/* 3.3 Visual Effects Layer (z-43: Multi-layer effects from assets/visualeffect/ on top of category & header, below character name & text) */}
+      {card.visualEffects && card.visualEffects.length > 0 && (
+        <>
+          {card.visualEffects.map((fxUrl, idx) => (
+            <img
+              key={`${fxUrl}-${idx}`}
+              src={fxUrl}
+              alt={`Visual Effect ${idx + 1}`}
+              className="absolute inset-0 w-full h-full object-fill pointer-events-none z-43 select-none"
+              loading="eager"
+              decoding="sync"
+            />
+          ))}
+        </>
+      )}
+
       {/* 4. Interactive Image Drag Handle (枠の中だけを選択してスライド・移動できるようにする) */}
       {card.imageUrl && (
         <div
           data-image-drag-handle="true"
-          className="absolute z-45 cursor-move touch-none"
+          className="absolute z-48 cursor-move touch-none"
           title="ドラッグまたはスワイプで画像位置を調整できます"
           style={
             card.isFullArt
-              ? { inset: 0 }
+              ? {
+                  top: TRAINER_CARD_LAYOUT_CONFIG.FULLART_IMAGE_TOP,
+                  left: TRAINER_CARD_LAYOUT_CONFIG.FULLART_IMAGE_LEFT,
+                  width: TRAINER_CARD_LAYOUT_CONFIG.FULLART_IMAGE_WIDTH,
+                  height: TRAINER_CARD_LAYOUT_CONFIG.FULLART_IMAGE_HEIGHT,
+                }
               : {
                   top: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_TOP,
                   left: TRAINER_CARD_LAYOUT_CONFIG.IMAGE_LEFT,
@@ -209,8 +296,8 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
         />
       )}
 
-      {/* 5. Main Card Content Layer */}
-      <div className="absolute inset-0 w-full h-full pointer-events-auto z-40 select-none">
+      {/* 5. Main Card Content Layer (z-50: Character name, category bar, rule text, effect text, footer) */}
+      <div className="absolute inset-0 w-full h-full pointer-events-auto z-50 select-none">
         
         {/* TOP CATEGORY BAR (トレーナーズ / サポート / グッズ / スタジアム / どうぐ) - Hide when overlay image is present */}
         {!overlayImageUrl && (
@@ -251,11 +338,15 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
           }}
         >
           <h1 
-            className="font-matter font-black leading-none text-slate-950 inline-block pr-3 overflow-visible whitespace-nowrap"
+            data-text-stroke={card.isFullArt ? 'true' : undefined}
+            className={`font-matter font-black leading-none text-slate-950 inline-block pr-3 overflow-visible whitespace-nowrap ${
+              card.isFullArt ? 'card-text-stroke' : ''
+            }`}
             style={{
               fontSize: `${TRAINER_CARD_LAYOUT_CONFIG.TITLE_FONT_SIZE}px`,
               letterSpacing: TRAINER_CARD_LAYOUT_CONFIG.TITLE_LETTER_SPACING,
               fontWeight: 900,
+              ...(card.isFullArt ? textOutlineStyle : {}),
             }}
           >
             {card.name || 'カード名'}
@@ -332,9 +423,13 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
             {/* Left: Illustrator & Set info */}
             <div className="flex flex-col gap-0.5">
               <span 
-                className="font-bold italic text-[8.5px] text-slate-800 leading-tight inline-block"
+                data-text-stroke={card.isFullArt ? 'true' : undefined}
+                className={`font-bold italic text-[8.5px] text-slate-800 leading-tight inline-block ${
+                  card.isFullArt ? 'card-text-stroke' : ''
+                }`}
                 style={{
                   transform: `translateY(${TRAINER_CARD_LAYOUT_CONFIG.ILLUSTRATOR_OFFSET_Y}px)`,
+                  ...(card.isFullArt ? textOutlineStyle : {}),
                 }}
               >
                 Illus.{card.illustrator || 'Hiro Iwai'}
@@ -361,12 +456,28 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
                 </span>
 
                 {/* カード番号（斜体・イタリック体） */}
-                <span className="font-black italic text-[9.5px] text-slate-800 tracking-tight ml-1">
+                <span 
+                  data-text-stroke={card.isFullArt ? 'true' : undefined}
+                  className={`font-black italic text-[9.5px] text-slate-800 tracking-tight ml-1 ${
+                    card.isFullArt ? 'card-text-stroke' : ''
+                  }`}
+                  style={{
+                    ...(card.isFullArt ? textOutlineStyle : {}),
+                  }}
+                >
                   {card.cardNumber || '001/100'}
                 </span>
 
                 {/* レアリティ記号 */}
-                <span className="font-black italic text-[9px] text-slate-900 ml-0.5">
+                <span 
+                  data-text-stroke={card.isFullArt ? 'true' : undefined}
+                  className={`font-black italic text-[9px] text-slate-900 ml-0.5 ${
+                    card.isFullArt ? 'card-text-stroke' : ''
+                  }`}
+                  style={{
+                    ...(card.isFullArt ? textOutlineStyle : {}),
+                  }}
+                >
                   {card.rarity || 'U'}
                 </span>
               </div>

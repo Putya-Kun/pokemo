@@ -13,8 +13,7 @@ export const CardStyleEditor: React.FC<CardStyleEditorProps> = ({
   card,
   onUpdate,
 }) => {
-  const isTrainer = card.kind === 'trainer';
-  const currentFrameId = isTrainer ? 'none' : (card.selectedFrame || 'normal');
+  const currentFrameId = card.selectedFrame || 'normal';
   const selectedEffects = card.visualEffects || [];
   const isMaxReached = selectedEffects.length >= 5;
   const [activeCategory, setActiveCategory] = useState<string>('ALL');
@@ -52,16 +51,9 @@ export const CardStyleEditor: React.FC<CardStyleEditorProps> = ({
           </span>
         </div>
 
-        {isTrainer ? (
-          <div className="bg-slate-800/80 border border-amber-500/30 rounded-xl p-3 mb-3 text-xs text-amber-300/90 flex items-center gap-2 shadow-sm">
-            <span className="font-bold text-amber-400 shrink-0">※</span>
-            <span>トレーナーズカードは専用デザイン枠のため、フレーム選択は無効（選択なし固定）になります。</span>
-          </div>
-        ) : (
-          <p className="text-[11px] text-slate-400 mb-3">
-            カードのフレームの色を変更します。
-          </p>
-        )}
+        <p className="text-[11px] text-slate-400 mb-3">
+          カードのフレームの色を変更します。
+        </p>
 
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
           {FRAME_OPTIONS.map((opt) => {
@@ -70,16 +62,11 @@ export const CardStyleEditor: React.FC<CardStyleEditorProps> = ({
               <button
                 key={opt.id}
                 type="button"
-                disabled={isTrainer}
                 onClick={() => {
-                  if (!isTrainer) {
-                    onUpdate({ selectedFrame: opt.id });
-                  }
+                  onUpdate({ selectedFrame: opt.id });
                 }}
-                className={`group relative p-2 rounded-xl border text-center transition-all overflow-hidden flex flex-col items-center justify-between ${
-                  isTrainer
-                    ? 'opacity-35 grayscale cursor-not-allowed border-slate-800 bg-slate-900/40 pointer-events-none'
-                    : isSelected
+                className={`group relative p-2 rounded-xl border text-center transition-all overflow-hidden flex flex-col items-center justify-between cursor-pointer ${
+                  isSelected
                     ? 'border-amber-400 bg-slate-800 text-white shadow-lg ring-2 ring-amber-400/40'
                     : 'border-slate-700/80 bg-slate-800/70 text-slate-300 hover:bg-slate-700/60 hover:border-slate-600'
                 }`}
