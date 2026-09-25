@@ -228,5 +228,6 @@ export const EX_ICON_OPTIONS: ExIconOption[] = [
   { id: 'vmax', name: 'VMAX', url: 'assets/exicon/icon-vmax.webp' },
   { id: 'vstar', name: 'VSTAR', url: 'assets/exicon/icon-vstar.webp' },
   { id: 'lvx', name: 'LV.X', url: 'assets/exicon/icon-lvx.webp' },
+  { id: 'gold-star', name: '☆ (ゴールドスター)', url: 'assets/exicon/icon-gold-star.webp' },
 ];
 

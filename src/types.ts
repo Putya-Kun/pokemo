@@ -92,6 +92,7 @@ export interface PokemonCardData {
   
   foilEffect?: FoilEffect;
   selectedFrame?: string; // id from FRAME_OPTIONS e.g. 'normal', 'rare', 'gold', etc.
+  visualEffects?: string[]; // Array of visual effect image URLs (up to 5)
   frameAccentColor?: string;
   customCardTag?: string;
 
@@ -129,6 +130,7 @@ export interface TrainerCardData {
   
   foilEffect?: FoilEffect;
   selectedFrame?: string;
+  visualEffects?: string[]; // Array of visual effect image URLs (up to 5)
   customCardTag?: string;
 
   // Custom positioning & scale adjustments

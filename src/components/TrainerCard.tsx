@@ -160,12 +160,28 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
         />
       )}
 
-      {/* 3.1 Trainer Category Overlay Image Layer (z-35) - Full size layer overlay as requested */}
+      {/* 3.2 Visual Effects Layer (z-38: Multi-layer effects from assets/visualeffect/ on top of frame/background, under category overlay & text) */}
+      {card.visualEffects && card.visualEffects.length > 0 && (
+        <>
+          {card.visualEffects.map((fxUrl, idx) => (
+            <img
+              key={`${fxUrl}-${idx}`}
+              src={fxUrl}
+              alt={`Visual Effect ${idx + 1}`}
+              className="absolute inset-0 w-full h-full object-fill pointer-events-none z-38 select-none"
+              loading="eager"
+              decoding="sync"
+            />
+          ))}
+        </>
+      )}
+
+      {/* 3.3 Trainer Category Overlay Image Layer (z-42) - Full size layer overlay above visual effects */}
       {overlayImageUrl && (
         <img
           src={overlayImageUrl}
           alt="Trainer Category Overlay"
-          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-35 select-none"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-42 select-none"
           loading="eager"
           decoding="sync"
           onError={(e) => {

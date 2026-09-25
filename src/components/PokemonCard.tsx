@@ -269,12 +269,28 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
         />
       )}
 
-      {/* Stage Badge Overlay Layer (exact card size overlay at z-35 so it sits on top of artwork & frame) */}
+      {/* Visual Effects Layer (z-38: Multi-layer effects from assets/visualeffect/ on top of frame/bottom, under text, stage badges & controls) */}
+      {card.visualEffects && card.visualEffects.length > 0 && (
+        <>
+          {card.visualEffects.map((fxUrl, idx) => (
+            <img
+              key={`${fxUrl}-${idx}`}
+              src={fxUrl}
+              alt={`Visual Effect ${idx + 1}`}
+              className="absolute inset-0 w-full h-full object-fill pointer-events-none z-38 select-none"
+              loading="eager"
+              decoding="sync"
+            />
+          ))}
+        </>
+      )}
+
+      {/* Stage Badge Overlay Layer (exact card size overlay at z-42 so it sits on top of artwork, frame & visual effects) */}
       {STAGE_OVERLAY_IMAGES[card.stage] && (
         <img
           src={STAGE_OVERLAY_IMAGES[card.stage]}
           alt={`${card.stage} Overlay`}
-          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-35 select-none"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none z-42 select-none"
           loading="eager"
           decoding="sync"
         />
