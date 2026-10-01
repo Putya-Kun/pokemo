@@ -68,13 +68,17 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
 
     if (card.kind === 'trainer') {
       if (card.isFullArt) {
-        return relX >= 0 && relX <= 1 && relY >= 0 && relY <= 1;
+        return relX >= 0.05 && relX <= 0.95 && relY >= 0.05 && relY <= 0.95;
       }
-      // トレーナーズ枠: top 16.5%〜52.5%, left 6.4%〜93.5%
-      return relX >= 0.05 && relX <= 0.95 && relY >= 0.15 && relY <= 0.54;
+      // トレーナーズ枠: top 13.0%〜52.0%, left 8.5%〜93.0%
+      return relX >= 0.08 && relX <= 0.93 && relY >= 0.12 && relY <= 0.53;
     } else {
-      // ポケモンカード枠: top 10.0%〜48.0%, left 8.6%〜92.3%
-      return relX >= 0.07 && relX <= 0.93 && relY >= 0.09 && relY <= 0.49;
+      const isPokemonFullArt = card.cardStyle === 'fullart' || card.cardStyle === 'fullart_ex';
+      if (isPokemonFullArt) {
+        return relX >= 0.05 && relX <= 0.95 && relY >= 0.05 && relY <= 0.95;
+      }
+      // ポケモンカード枠: top 10.0%〜54.8%, left 8.6%〜92.3%
+      return relX >= 0.08 && relX <= 0.93 && relY >= 0.09 && relY <= 0.55;
     }
   };
 
@@ -695,7 +699,7 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
         className={`card-perspective w-full flex items-center justify-center py-2 min-h-[480px] sm:min-h-[600px] overflow-hidden select-none ${
-          is3DMode ? 'touch-none cursor-grab active:cursor-grabbing' : 'touch-none'
+          is3DMode ? 'touch-none cursor-grab active:cursor-grabbing' : 'touch-pan-y'
         }`}
         style={{
           perspective: 1200,

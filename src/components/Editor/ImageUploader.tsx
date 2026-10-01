@@ -36,6 +36,9 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         if (event.target?.result) {
           onUpdate({
             imageUrl: event.target.result as string,
+            imageScale: 1.0,
+            imagePositionX: 0,
+            imagePositionY: 0,
           });
         }
       };
@@ -52,6 +55,9 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         if (event.target?.result) {
           onUpdate({
             imageUrl: event.target.result as string,
+            imageScale: 1.0,
+            imagePositionX: 0,
+            imagePositionY: 0,
           });
         }
       };
@@ -61,6 +67,18 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   const handleResetPosition = () => {
     onUpdate({
+      imageScale: 1.0,
+      imagePositionX: 0,
+      imagePositionY: 0,
+    });
+  };
+
+  const handleDeleteImage = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    onUpdate({
+      imageUrl: '',
       imageScale: 1.0,
       imagePositionX: 0,
       imagePositionY: 0,
@@ -105,7 +123,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           </span>
           <button
             type="button"
-            onClick={() => onUpdate({ imageUrl: '' })}
+            onClick={handleDeleteImage}
             className="text-slate-400 hover:text-rose-400 text-[11px] font-semibold underline cursor-pointer"
           >
             画像を削除
@@ -121,7 +139,17 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         <input
           type="text"
           value={displayUrl}
-          onChange={(e) => onUpdate({ imageUrl: e.target.value })}
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val !== imageUrl) {
+              onUpdate({
+                imageUrl: val,
+                imageScale: 1.0,
+                imagePositionX: 0,
+                imagePositionY: 0,
+              });
+            }
+          }}
           placeholder="https://example.com/character.png"
           className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400"
         />
