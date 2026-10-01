@@ -127,30 +127,17 @@ export const TrainerCard: React.FC<TrainerCardProps> = React.memo(({ card }) => 
       }}
     >
       {/* 1. ARTWORK LAYER (Lowest priority z-1: Spans full canvas without tight box clipping, sitting strictly BEHIND background, frames & text) */}
-      <div 
-        className="absolute z-1 pointer-events-none overflow-hidden"
-        style={
-          card.isFullArt
-            ? {
-                top: TRAINER_CARD_LAYOUT_CONFIG.FULLART_IMAGE_TOP,
-                left: TRAINER_CARD_LAYOUT_CONFIG.FULLART_IMAGE_LEFT,
-                width: TRAINER_CARD_LAYOUT_CONFIG.FULLART_IMAGE_WIDTH,
-                height: TRAINER_CARD_LAYOUT_CONFIG.FULLART_IMAGE_HEIGHT,
-              }
-            : {
-                inset: 0,
-              }
-        }
-      >
+      <div className="absolute inset-0 w-full h-full z-1 pointer-events-none flex items-center justify-center">
         {card.imageUrl ? (
           <img
             src={card.imageUrl}
             alt={card.name}
-            className="w-full h-full"
+            className="absolute inset-0 w-full h-full"
             referrerPolicy="no-referrer"
             style={{
               transform: `scale(${card.imageScale}) translate(${card.imagePositionX}%, ${card.imagePositionY}%)`,
-              objectFit: card.isFullArt ? TRAINER_CARD_LAYOUT_CONFIG.FULLART_OBJECT_FIT : card.imageFit,
+              transformOrigin: 'center center',
+              objectFit: card.imageFit || 'cover',
             }}
           />
         ) : (

@@ -275,6 +275,9 @@ export default function App() {
             {activeTab === 'image' && (
               <ImageUploader
                 imageUrl={currentCard.imageUrl}
+                imageScale={currentCard.imageScale ?? 1.0}
+                imagePositionX={currentCard.imagePositionX ?? 0}
+                imagePositionY={currentCard.imagePositionY ?? 0}
                 onUpdate={handleUpdateCard}
               />
             )}

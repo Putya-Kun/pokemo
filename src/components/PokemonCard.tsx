@@ -138,45 +138,21 @@ export const PokemonCard: React.FC<PokemonCardProps> = React.memo(({ card }) => 
         />
       )}
 
-      {/* 1. ARTWORK LAYER (z-2: Spans wide up to frame boundaries, strictly behind front borders & UI) */}
+      {/* 1. ARTWORK LAYER (z-2: Spans full canvas without artificial window clipping, sitting strictly behind background, frames & UI) */}
       <div className="absolute inset-0 w-full h-full z-2 pointer-events-none flex items-center justify-center">
-        {/* Card Image */}
+        {/* Card Image: Spans the full card canvas so the image is fully preserved behind the frame/background */}
         {card.imageUrl ? (
-          <div
-            className="absolute overflow-hidden"
-            style={
-              isFullArt
-                ? { inset: 0 }
-                : (isNormalEx || isEx)
-                ? {
-                    top: POKEMON_CARD_LAYOUT_CONFIG.ART_EX.TOP,
-                    left: POKEMON_CARD_LAYOUT_CONFIG.ART_EX.LEFT,
-                    width: POKEMON_CARD_LAYOUT_CONFIG.ART_EX.WIDTH,
-                    height: POKEMON_CARD_LAYOUT_CONFIG.ART_EX.HEIGHT,
-                  }
-                : {
-                    top: POKEMON_CARD_LAYOUT_CONFIG.ART_NORMAL.TOP,
-                    left: POKEMON_CARD_LAYOUT_CONFIG.ART_NORMAL.LEFT,
-                    width: POKEMON_CARD_LAYOUT_CONFIG.ART_NORMAL.WIDTH,
-                    height: POKEMON_CARD_LAYOUT_CONFIG.ART_NORMAL.HEIGHT,
-                  }
-            }
-          >
-            <img
-              src={card.imageUrl}
-              alt={card.name}
-              className="w-full h-full"
-              referrerPolicy="no-referrer"
-              style={{
-                objectFit:
-                  isFullArt
-                    ? 'cover'
-                    : (isNormalEx || isEx)
-                    ? POKEMON_CARD_LAYOUT_CONFIG.ART_EX.OBJECT_FIT
-                    : POKEMON_CARD_LAYOUT_CONFIG.ART_NORMAL.OBJECT_FIT,
-              }}
-            />
-          </div>
+          <img
+            src={card.imageUrl}
+            alt={card.name}
+            className="absolute inset-0 w-full h-full"
+            referrerPolicy="no-referrer"
+            style={{
+              transform: `scale(${card.imageScale ?? 1.0}) translate(${card.imagePositionX ?? 0}%, ${card.imagePositionY ?? 0}%)`,
+              transformOrigin: 'center center',
+              objectFit: card.imageFit || 'cover',
+            }}
+          />
         ) : (
           <div 
             className="absolute flex flex-col items-center justify-center bg-slate-800/80 text-slate-300 text-xs rounded-lg border border-dashed border-slate-600 pointer-events-auto"

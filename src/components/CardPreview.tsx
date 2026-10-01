@@ -24,6 +24,17 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const dragStartRef = useRef<{ clientX: number; clientY: number; posX: number; posY: number } | null>(null);
 
+  // Two-finger pinch-to-zoom state (二本指ピンチ拡大・縮小)
+  const pinchStartRef = useRef<{
+    initialDistance: number;
+    initialScale: number;
+    midX: number;
+    midY: number;
+    initialPosX: number;
+    initialPosY: number;
+  } | null>(null);
+  const [isPinching, setIsPinching] = useState(false);
+
   const isMobile = typeof window !== 'undefined' && (
     /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
     (navigator.maxTouchPoints > 1 && /Macintosh/i.test(navigator.userAgent))
@@ -97,8 +108,8 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
 
       // Sensitivity factor: 1px movement ≈ 0.35 unit position change
       const sensitivity = 0.35;
-      const nextX = Math.min(50, Math.max(-50, Math.round(dragStartRef.current.posX + deltaX * sensitivity)));
-      const nextY = Math.min(50, Math.max(-50, Math.round(dragStartRef.current.posY + deltaY * sensitivity)));
+      const nextX = Math.min(100, Math.max(-100, Math.round(dragStartRef.current.posX + deltaX * sensitivity)));
+      const nextY = Math.min(100, Math.max(-100, Math.round(dragStartRef.current.posY + deltaY * sensitivity)));
 
       onUpdateCard({
         imagePositionX: nextX,
@@ -111,19 +122,129 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
   const handlePointerUp = () => {
     setIsDraggingImage(false);
     dragStartRef.current = null;
+    pinchStartRef.current = null;
+    setIsPinching(false);
     if (is3DMode) {
       setRotation({ x: 0, y: 0 });
     }
   };
 
+  // Touch Start Handler supporting 1-finger drag and 2-finger pinch (二本指で拡大・縮小)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (is3DMode || !card.imageUrl || !onUpdateCard) return;
+
+    if (e.touches.length === 2) {
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const midX = (t1.clientX + t2.clientX) / 2;
+      const midY = (t1.clientY + t2.clientY) / 2;
+
+      // Check if touches or midpoint is inside image frame
+      const inside = isInsideImageFrame(midX, midY, e.target) ||
+                     isInsideImageFrame(t1.clientX, t1.clientY, e.target) ||
+                     isInsideImageFrame(t2.clientX, t2.clientY, e.target);
+
+      if (inside) {
+        const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+        pinchStartRef.current = {
+          initialDistance: dist,
+          initialScale: card.imageScale ?? 1.0,
+          midX,
+          midY,
+          initialPosX: card.imagePositionX ?? 0,
+          initialPosY: card.imagePositionY ?? 0,
+        };
+        setIsPinching(true);
+        setIsDraggingImage(false);
+        dragStartRef.current = null;
+      }
+    } else if (e.touches.length === 1 && !pinchStartRef.current) {
+      handlePointerDown(e.touches[0].clientX, e.touches[0].clientY, e.target);
+    }
+  };
+
+  // Touch Move Handler supporting 1-finger drag and 2-finger pinch-to-zoom
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (is3DMode || !card.imageUrl || !onUpdateCard) return;
+
+    if (e.touches.length === 2 && pinchStartRef.current) {
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const currentDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+      const currentMidX = (t1.clientX + t2.clientX) / 2;
+      const currentMidY = (t1.clientY + t2.clientY) / 2;
+
+      if (pinchStartRef.current.initialDistance > 0) {
+        const ratio = currentDist / pinchStartRef.current.initialDistance;
+        const newScale = Math.min(4.0, Math.max(0.3, Math.round(pinchStartRef.current.initialScale * ratio * 100) / 100));
+
+        // Simultaneous 2-finger pan
+        const deltaX = currentMidX - pinchStartRef.current.midX;
+        const deltaY = currentMidY - pinchStartRef.current.midY;
+        const sensitivity = 0.35;
+        const nextX = Math.min(100, Math.max(-100, Math.round(pinchStartRef.current.initialPosX + deltaX * sensitivity)));
+        const nextY = Math.min(100, Math.max(-100, Math.round(pinchStartRef.current.initialPosY + deltaY * sensitivity)));
+
+        onUpdateCard({
+          imageScale: newScale,
+          imagePositionX: nextX,
+          imagePositionY: nextY,
+        });
+      }
+    } else if (e.touches.length === 1 && isDraggingImage) {
+      handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.touches.length < 2) {
+      pinchStartRef.current = null;
+      setIsPinching(false);
+    }
+    if (e.touches.length === 0) {
+      handlePointerUp();
+    }
+  };
+
+  // Prevent browser viewport zoom on 2-finger pinch over card & enable desktop wheel zoom
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+
+    const onTouchMoveNative = (e: TouchEvent) => {
+      if (e.touches.length === 2 && pinchStartRef.current) {
+        e.preventDefault();
+      }
+    };
+
+    const onWheelNative = (e: WheelEvent) => {
+      if (!card.imageUrl || !onUpdateCard || is3DMode) return;
+      if (isInsideImageFrame(e.clientX, e.clientY, e.target)) {
+        e.preventDefault();
+        const zoomDelta = e.deltaY < 0 ? 0.05 : -0.05;
+        const currentScale = card.imageScale ?? 1.0;
+        const newScale = Math.min(4.0, Math.max(0.3, Math.round((currentScale + zoomDelta) * 100) / 100));
+        onUpdateCard({ imageScale: newScale });
+      }
+    };
+
+    el.addEventListener('touchmove', onTouchMoveNative, { passive: false });
+    el.addEventListener('wheel', onWheelNative, { passive: false });
+
+    return () => {
+      el.removeEventListener('touchmove', onTouchMoveNative);
+      el.removeEventListener('wheel', onWheelNative);
+    };
+  }, [card.imageUrl, card.imageScale, onUpdateCard, is3DMode]);
+
   // ドラッグ操作中のウィンドウ全域トラッキング（ドラッグ中にマウスや指がカード外に出ても滑らかに追従）
   useEffect(() => {
-    if (!isDraggingImage) return;
+    if (!isDraggingImage && !isPinching) return;
 
     const onGlobalMove = (e: MouseEvent | TouchEvent) => {
-      if ('touches' in e && e.touches.length > 0) {
+      if ('touches' in e && e.touches.length === 1) {
         handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
-      } else if ('clientX' in e) {
+      } else if ('clientX' in e && !('touches' in e)) {
         handlePointerMove((e as MouseEvent).clientX, (e as MouseEvent).clientY);
       }
     };
@@ -145,7 +266,7 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
       window.removeEventListener('touchend', onGlobalUp);
       window.removeEventListener('touchcancel', onGlobalUp);
     };
-  }, [isDraggingImage]);
+  }, [isDraggingImage, isPinching]);
 
   // Dedicated Print / Save Preview (window.print())
   const handlePCPrintView = (dataUrl: string) => {
@@ -569,19 +690,12 @@ export const CardPreview: React.FC<CardPreviewProps> = React.memo(({ card, onUpd
         onMouseMove={(e) => handlePointerMove(e.clientX, e.clientY)}
         onMouseUp={handlePointerUp}
         onMouseLeave={handlePointerUp}
-        onTouchStart={(e) => {
-          if (e.touches.length > 0) {
-            handlePointerDown(e.touches[0].clientX, e.touches[0].clientY, e.target);
-          }
-        }}
-        onTouchMove={(e) => {
-          if (e.touches.length > 0) {
-            handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
-          }
-        }}
-        onTouchEnd={handlePointerUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
         className={`card-perspective w-full flex items-center justify-center py-2 min-h-[480px] sm:min-h-[600px] overflow-hidden select-none ${
-          is3DMode ? 'touch-none cursor-grab active:cursor-grabbing' : ''
+          is3DMode ? 'touch-none cursor-grab active:cursor-grabbing' : 'touch-none'
         }`}
         style={{
           perspective: 1200,
